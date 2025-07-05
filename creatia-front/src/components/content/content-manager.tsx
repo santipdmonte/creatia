@@ -119,11 +119,11 @@ export function ContentManager() {
         {filteredItems.map((item) => (
           <div key={item.id} className="group relative">
             <Card className="overflow-hidden hover:shadow-brand transition-all duration-200 cursor-pointer">
-              <div className="aspect-square relative bg-muted">
+              <div className="aspect-square relative bg-muted overflow-hidden">
                 <img 
                   src={item.url} 
                   alt={item.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
                   onError={(e) => {
                     // Fallback si la imagen no carga
                     const target = e.target as HTMLImageElement;
