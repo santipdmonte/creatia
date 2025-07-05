@@ -14,22 +14,6 @@ export function Header() {
           <span className="text-xl font-bold gradient-text">Creatia</span>
         </div>
 
-        {/* Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          <a href="#" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
-            Panel
-          </a>
-          <a href="#" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
-            Estrategia
-          </a>
-          <a href="#" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
-            Contenido
-          </a>
-          <a href="#" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
-            Analíticas
-          </a>
-        </nav>
-
         {/* Actions */}
         <div className="flex items-center space-x-2">
           <ThemeToggle />
