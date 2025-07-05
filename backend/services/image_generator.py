@@ -12,6 +12,7 @@ from pathlib import Path
 import uuid
 from datetime import datetime
 from dotenv import load_dotenv
+from services.prompt_generator import get_aiweekend_prompt
 
 class ImageGeneratorService:
     def __init__(self):
@@ -82,8 +83,6 @@ class ImageGeneratorService:
         if count > 10:  # OpenAI rate limiting consideration
             raise ValueError("Count cannot exceed 10 images per batch")
 
-
-
         if images_url_list:
             # Create tasks for parallel execution
             images_list = []
@@ -144,21 +143,19 @@ class ImageGeneratorService:
                         result_data = {
                             "index": i,
                             "image_path": image_path,
-                            "status": "success",
-                            "result": result
+                            "status": "success"
                         }
                     except Exception as e:
                         result_data = {
                             "index": i,
                             "error": f"Failed to save image: {str(e)}",
-                            "status": "save_failed",
-                            "result": result
+                            "status": "save_failed"
                         }
                 else:
+                    # For responses without saving, include basic result info
                     result_data = {
                         "index": i,
-                        "status": "success",
-                        "result": result
+                        "status": "success"
                     }
                 
                 successful_results.append(result_data)

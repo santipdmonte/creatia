@@ -1,0 +1,19 @@
+{
+    "success": true,
+    "weekly_plan": {
+      "lunes": {
+        "reference_images": [
+          "logo_682370ab48bec_medium.webp",
+          "avatars/o_1iteckaknngm12do11h953rlftfn.webp"
+        ],
+        "description": "Crear un post visualmente impactante para generar expectativa sobre el AI Weekend. Utilizar el logo de AI Weekend y la mascota en una posición energética con un fondo de gradientes vibrantes en tonos hot pink y purple. Incluir un mensaje llamativo en tipografía Montserrat en mayúsculas: '¡Comienza la cuenta regresiva para el evento del año!'. Aplicar efectos de neón y resaltar la fecha del evento: '27-29 OCT, Buenos Aires'."
+      },
+      "martes": {
+        "reference_images": [
+          "avatars/o_1iteckaknngm12do11h953rlftfn.webp"
+        ],
+        "description": "Crear una historia de Instagram que use la mascota en un estilo cartoonish 3D. La mascota debe estar animada, usando un megáfono para invitar a los seguidores a participar en el AI Weekend. Usar un fondo oscuro con elementos neomórficos y un CTA que diga: 'Descubre el futuro de la AI. ¡No te lo pierdas!' con un botón de swipe up en neon cyan."
+      }
+    },
+    "error": null
+  }
