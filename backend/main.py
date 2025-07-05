@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from routes.resources import router as resources_router
 from routes.images import router as images_router
+from routes.monthly_planner import router as monthly_planner_router
+from routes.strategist import router as strategist_router
+from routes.weekly_planner import router as weekly_planner_router
 
 load_dotenv()
 
@@ -16,6 +19,9 @@ app = FastAPI(
 # Include routers
 app.include_router(resources_router)
 app.include_router(images_router)
+app.include_router(monthly_planner_router)
+app.include_router(strategist_router)
+app.include_router(weekly_planner_router)
 
 @app.get("/")
 async def root():
