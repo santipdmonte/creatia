@@ -1,31 +1,15 @@
-import os
+from fastapi import FastAPI
 
-from services.image_generator import generate_image, save_image
-from services.prompt_generator import get_prompt, get_prompt_edit, get_aiweekend_prompt
+app = FastAPI(
+    title="Creatia API",
+    description="API for the Creatia application",
+    version="1.0.0"
+)
 
+@app.get("/")
+async def root():
+    return {"message": "Welcome to Creatia API"}
 
-# Create imgs/ folder
-destination_folder = "images_generated/"
-os.makedirs(destination_folder, exist_ok=True)
-
-# prompt = get_prompt()
-# destination_path = f"{destination_folder}/glorptak.jpg"
-
-# destination_path = f"{destination_folder}/cat_with_hat.jpg"
-# prompt = get_prompt_edit()
-# img1 = open("images/cat.jpeg", "rb")
-# img2 = open("images/hat.png", "rb")
-# images_path = [img1, img2]
-
-destination_path = f"{destination_folder}/aiweekend.jpg"
-user_prompt = "A instagram history publishing a post about the AI weekend HACKATON"
-prompt = get_aiweekend_prompt(user_prompt)
-
-quality = "low" # medium, high, or low
-size = "1024x1536" # 1024x1024, 1024x1536, 1536x1024
-output_format = "jpeg" # jpeg, png, webp **PNG for transparent backgrounds**
-
-
-# result1 = generate_image(prompt, quality, size, output_format, images_path)
-result1 = generate_image(prompt, quality, size, output_format)
-save_image(result1, destination_path)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
