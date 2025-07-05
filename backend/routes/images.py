@@ -32,12 +32,7 @@ class WeeklyPlanRequest(BaseModel):
     output_format: str = "jpeg"
     images_per_day: int = 3
 
-class WeeklyPlanResponse(BaseModel):
-    success: bool
-    results: Dict[str, Any]
-    total_days_processed: int
-    total_images_generated: int
-    errors: List[str] = []
+
 
 @router.post("/generate-batch")
 async def generate_batch_images(request: BatchImageRequest):
@@ -110,18 +105,12 @@ async def generate_weekly_plan(request: WeeklyPlanRequest):
     """
     try:
         result = await weekly_prompt_processing(request)
-        # Return as plain dictionary to avoid Pydantic serialization issues
-        return {
-            "success": result.success,
-            "results": result.results,
-            "total_days_processed": result.total_days_processed,
-            "total_images_generated": result.total_images_generated,
-            "errors": result.errors
-        }
+        # Return the dictionary directly (no Pydantic serialization needed)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing weekly plan: {str(e)}")
 
-async def weekly_prompt_processing(request: WeeklyPlanRequest) -> WeeklyPlanResponse:
+async def weekly_prompt_processing(request: WeeklyPlanRequest) -> dict:
     """
     Process the weekly planning JSON and generate batch images for each day
     
@@ -129,7 +118,7 @@ async def weekly_prompt_processing(request: WeeklyPlanRequest) -> WeeklyPlanResp
         request: WeeklyPlanRequest containing the weekly plan data and generation settings
         
     Returns:
-        WeeklyPlanResponse with results for each day
+        dict: Dictionary with results for each day
     """
     service = get_image_generator_service()
     
@@ -226,10 +215,10 @@ async def weekly_prompt_processing(request: WeeklyPlanRequest) -> WeeklyPlanResp
             print(f"❌ {error_msg}")
             continue
     
-    return WeeklyPlanResponse(
-        success=len(results) > 0,
-        results=results,
-        total_days_processed=len(results),
-        total_images_generated=total_images_generated,
-        errors=errors
-    )
+    return {
+        "success": len(results) > 0,
+        "results": results,
+        "total_days_processed": len(results),
+        "total_images_generated": total_images_generated,
+        "errors": errors
+    }
