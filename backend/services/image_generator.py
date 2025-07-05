@@ -23,7 +23,7 @@ class ImageGeneratorService:
         prompt: str,
         quality: str = "medium", # low, medium, high, auto
         size: str = "1024x1024", # 1024x1024, 1536x1024, 1024x1536, 256x256, 512x512, 1792x1024, 1024x1792
-        output_format: str = "png", # png, jpeg, webp
+        output_format: str = "jpeg", # png, jpeg, webp
         images_list: Optional[List[Any]] = None
     ):
 
@@ -55,10 +55,10 @@ class ImageGeneratorService:
         count: int,
         quality: str = "medium",
         size: str = "1024x1024",
-        output_format: str = "png",
-        images_list: Optional[List[Any]] = None,
+        output_format: str = "jpeg",
+        images_url_list: Optional[List[str]] = None,
         save_directory: Optional[str] = None,
-        filename_prefix: Optional[str] = None
+        filename_prefix: Optional[str] = None,
     ) -> dict:
         """
         Generate multiple images in parallel with the same prompt.
@@ -69,7 +69,7 @@ class ImageGeneratorService:
             quality: Image quality (low, medium, high, auto)
             size: Image size (1024x1024, 1536x1024, etc.)
             output_format: Output format (png, jpeg, webp)
-            images_list: Optional list of images for editing
+            images_url_list: Optional list of image file paths for editing
             save_directory: Directory to save images (optional)
             filename_prefix: Prefix for saved filenames (optional)
             
@@ -82,18 +82,39 @@ class ImageGeneratorService:
         if count > 10:  # OpenAI rate limiting consideration
             raise ValueError("Count cannot exceed 10 images per batch")
 
-        # Create tasks for parallel execution
-        tasks = []
-        for i in range(count):
-            task = self._generate_single_image_async(
-                prompt=prompt,
-                quality=quality,
-                size=size,
-                output_format=output_format,
-                images_list=images_list,
-                image_index=i
-            )
-            tasks.append(task)
+
+
+        if images_url_list:
+            # Create tasks for parallel execution
+            images_list = []
+            for url in images_url_list:
+                img = open(url, "rb")
+                images_list.append(img)
+
+            tasks = []
+            for i in range(count):
+                task = self._edit_single_image_async(
+                    prompt=prompt,
+                    images_list=images_list,
+                    quality=quality,
+                    size=size,
+                    output_format=output_format,
+                    image_index=i,
+                )
+                tasks.append(task)       
+        else:      
+            # Create tasks for parallel execution
+            tasks = []
+            for i in range(count):
+                task = self._generate_single_image_async(
+                    prompt=prompt,
+                    quality=quality,
+                    size=size,
+                    output_format=output_format,
+                    image_index=i
+                )
+                tasks.append(task)
+   
 
         # Execute all tasks in parallel
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -195,7 +216,6 @@ class ImageGeneratorService:
                 model="gpt-image-1",
                 prompt=prompt,
                 quality=quality,
-                output_compression=50,
                 output_format=output_format,
                 size=size
             )
@@ -204,7 +224,6 @@ class ImageGeneratorService:
                 model="gpt-image-1",
                 prompt=prompt,
                 quality=quality,
-                output_compression=50,
                 output_format=output_format,
                 size=size,
                 image=images_list
@@ -239,6 +258,57 @@ class ImageGeneratorService:
 
         image = Image.open(BytesIO(image_bytes))
         image.save(image_path, format="JPEG", quality=95, optimize=True)
+
+    async def _edit_single_image_async(
+        self,
+        prompt: str,
+        images_list: List[Any],
+        quality: str,
+        size: str,
+        output_format: str,
+        image_index: int = 0
+    ):
+        """
+        Edit a single image asynchronously.
+        This runs the synchronous OpenAI image edit call in a thread pool.
+        """
+        loop = asyncio.get_event_loop()
+        
+        # Run the synchronous OpenAI call in a thread pool
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            result = await loop.run_in_executor(
+                executor,
+                self._edit_image_sync,
+                prompt,
+                images_list,
+                quality,
+                size,
+                output_format
+            )
+        
+        return result
+
+    def _edit_image_sync(
+        self,
+        prompt: str,
+        images_list: List[Any],
+        quality: str,
+        size: str,
+        output_format: str
+    ):
+        """
+        Synchronous image editing method for use in thread pool.
+        """
+        result = self.client.images.edit(
+            model="gpt-image-1",
+            prompt=prompt,
+            quality=quality,
+            output_format=output_format,
+            size=size,
+            image=images_list
+        )
+        
+        return result
 
 
 def get_image_generator_service() -> ImageGeneratorService:

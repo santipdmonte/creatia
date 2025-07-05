@@ -23,17 +23,22 @@ async def test_parallel_generation():
     image_generator_service = get_image_generator_service()
     
     print("\n📸 Test: Generating 3 images in parallel...")
-    prompt = get_aiweekend_prompt("A instagram history publishing a post about the AI weekend HACKATON")
+    # prompt = get_aiweekend_prompt("A instagram history publishing a post about the AI weekend HACKATON")
+    prompt = "A instagram history publishing a post about the AI weekend HACKATON, utilizing the style of the template image"
     
+    img_url = "resources_content/templates/weekaitemplate.webp"
+    images_url_list = [img_url]
+
     try:
         result = await image_generator_service.generate_multiple_images_parallel(
             prompt=prompt,
             count=3,
-            quality="medium",
+            quality="low",
             size="1024x1024",
             output_format="jpeg",
             save_directory=output_dir,
-            filename_prefix="aiweekend"
+            filename_prefix="aitest_codigo",
+            images_url_list=images_url_list
         )
         
         print(f"✅ Successfully generated {result['total_successful']} images")
