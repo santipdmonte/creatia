@@ -41,12 +41,9 @@ def generate_image(
     return result
 
 def save_image(result, image_path):
-
-    # Save the image to a file and resize/compress for smaller files
+    # Save the image to a file
     image_base64 = result.data[0].b64_json
     image_bytes = base64.b64decode(image_base64)
 
-    # Adjust this if you want a high-quality Glorptak
     image = Image.open(BytesIO(image_bytes))
-    image = image.resize((300, 300), Image.LANCZOS)
-    image.save(image_path, format="JPEG", quality=80, optimize=True)
+    image.save(image_path, format="JPEG", quality=95, optimize=True)
