@@ -12,18 +12,17 @@ size = "1024x1536"
 output_format = "jpeg"
 
 # CAT WITH HAT
-destination_path = f"{destination_folder}/cat_with_hat.jpg"
-prompt = get_prompt_edit()
-img1 = open("images/cat.jpeg", "rb")
-img2 = open("images/hat.png", "rb")
-images_lists = [img1, img2]
+# destination_path = f"{destination_folder}/cat_with_hat.jpg"
+# prompt = get_prompt_edit()
+# img1 = open("images/cat.jpeg", "rb")
+# img2 = open("images/hat.png", "rb")
+# images_lists = [img1, img2]
 
 # AI WEEKEND
-# destination_path = f"{destination_folder}/aiweekend.jpg"
-# user_prompt = "A instagram history publishing a post about the AI weekend HACKATON"
-# prompt = get_aiweekend_prompt(user_prompt)
-# images_lists = None
-
+destination_path = f"{destination_folder}/aiweekend.jpg"
+user_prompt = "A instagram history publishing a post about the AI weekend HACKATON"
+prompt = get_aiweekend_prompt(user_prompt)
+images_lists = None
 
 image_generator_service = get_image_generator_service()
 result = image_generator_service.generate_image(

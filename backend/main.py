@@ -1,5 +1,11 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from routes.resources import router as resources_router
+from routes.images import router as images_router
+
+load_dotenv()
 
 app = FastAPI(
     title="Creatia API",
@@ -9,6 +15,7 @@ app = FastAPI(
 
 # Include routers
 app.include_router(resources_router)
+app.include_router(images_router)
 
 @app.get("/")
 async def root():
