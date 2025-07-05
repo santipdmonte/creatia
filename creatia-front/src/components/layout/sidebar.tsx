@@ -15,10 +15,10 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const navigation = [
-    { name: "Panel", icon: LayoutDashboard, href: "#", current: true },
+    { name: "Panel", icon: LayoutDashboard, href: "/", current: true },
     { name: "Configuración", icon: Target, href: "#", current: false },
     { name: "Estrategia", icon: Calendar, href: "#", current: false },
-    { name: "Contenido", icon: Image, href: "#", current: false },
+    { name: "Contenido", icon: Image, href: "/contenido", current: false },
     { name: "Analíticas", icon: BarChart3, href: "#", current: false },
   ];
 
