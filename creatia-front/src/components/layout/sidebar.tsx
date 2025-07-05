@@ -6,8 +6,7 @@ import {
   Image, 
   BarChart3, 
   Settings, 
-  HelpCircle,
-  Sparkles
+  HelpCircle
 } from "lucide-react";
 
 interface SidebarProps {
@@ -30,14 +29,6 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <div className={`flex flex-col h-full bg-sidebar border-r ${className}`}>
-      {/* Logo */}
-      <div className="flex items-center px-6 py-4 border-b">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg gradient-brand">
-          <Sparkles className="w-5 h-5 text-white" />
-        </div>
-        <span className="ml-2 text-lg font-bold gradient-text">Creatia</span>
-      </div>
-
       {/* Main Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-2">
         {navigation.map((item) => (
