@@ -1,31 +1,36 @@
 import os
 
-from services.image_generator import generate_image, save_image
 from services.prompt_generator import get_prompt, get_prompt_edit, get_aiweekend_prompt
-
+from services.image_generator import get_image_generator_service
 
 # Create imgs/ folder
 destination_folder = "images_generated/"
 os.makedirs(destination_folder, exist_ok=True)
 
-# prompt = get_prompt()
-# destination_path = f"{destination_folder}/glorptak.jpg"
+quality = "low"
+size = "1024x1536"
+output_format = "jpeg"
 
-# destination_path = f"{destination_folder}/cat_with_hat.jpg"
-# prompt = get_prompt_edit()
-# img1 = open("images/cat.jpeg", "rb")
-# img2 = open("images/hat.png", "rb")
-# images_path = [img1, img2]
+# CAT WITH HAT
+destination_path = f"{destination_folder}/cat_with_hat.jpg"
+prompt = get_prompt_edit()
+img1 = open("images/cat.jpeg", "rb")
+img2 = open("images/hat.png", "rb")
+images_lists = [img1, img2]
 
-destination_path = f"{destination_folder}/aiweekend.jpg"
-user_prompt = "A instagram history publishing a post about the AI weekend HACKATON"
-prompt = get_aiweekend_prompt(user_prompt)
-
-quality = "low" # medium, high, or low
-size = "1024x1536" # 1024x1024, 1024x1536, 1536x1024
-output_format = "jpeg" # jpeg, png, webp **PNG for transparent backgrounds**
+# AI WEEKEND
+# destination_path = f"{destination_folder}/aiweekend.jpg"
+# user_prompt = "A instagram history publishing a post about the AI weekend HACKATON"
+# prompt = get_aiweekend_prompt(user_prompt)
+# images_lists = None
 
 
-# result1 = generate_image(prompt, quality, size, output_format, images_path)
-result1 = generate_image(prompt, quality, size, output_format)
-save_image(result1, destination_path)
+image_generator_service = get_image_generator_service()
+result = image_generator_service.generate_image(
+        prompt=prompt,
+        quality=quality, 
+        size=size,
+        output_format=output_format,
+        images_list=images_lists
+)
+image_generator_service.save_image(result, destination_path)
