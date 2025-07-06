@@ -466,13 +466,97 @@ export default function PostsSemanalesPage() {
       }
 
       // Use the detailed image description if available, otherwise use content description
-      let prompt = mondayPost.content
+      let initial_prompt = mondayPost.content
       if (mondayPost.originalPost?.image_detail_description) {
-        prompt = mondayPost.originalPost.image_detail_description
+        initial_prompt = mondayPost.originalPost.image_detail_description
       } else if (mondayPost.originalPost?.content_description) {
-        prompt = mondayPost.originalPost.content_description
+        initial_prompt = mondayPost.originalPost.content_description
       }
 
+      let prompt = initial_prompt + `
+      
+{
+    "brandIdentity": {
+      "name": "AI Weekend (AIWKND)",
+      "tagline": "Impulsando el futuro, hoy.",
+      "tone": "Futuristic, Playful, Bold, Professional",
+      "colorPalette": {
+        "primary": "#FF2D87",
+        "secondary": "#6C2BFF",
+        "accent1": "#00C2FF",
+        "accent2": "#0A0A0A",
+        "background": "#1E1E1E",
+        "textLight": "#FFFFFF",
+        "textMuted": "#B0B0B0"
+      },
+      "typography": {
+        "headingFont": "Montserrat, sans-serif",
+        "bodyFont": "Roboto, sans-serif",
+        "headingWeight": "800",
+        "bodyWeight": "400",
+        "textTransform": "uppercase for headings",
+        "textColor": "#FFFFFF"
+      },
+      "graphics": {
+        "style": "Gradient overlays, neomorphic elements, glowing effects",
+        "iconography": "Minimal, neon-outline icons or glyphs",
+        "shapes": ["Blobs", "Spheres", "Geometric stars", "Rounded rectangles"]
+      },
+      "layout": {
+        "structure": "Hero first, followed by key event details",
+        "alignment": "Center-aligned headers, grid-based sections",
+        "callToAction": {
+          "style": "Rounded buttons",
+          "color": "#FF2D87",
+          "textColor": "#FFFFFF",
+          "hoverEffect": "Glow or slight enlargement"
+        }
+      },
+      "components": {
+        "navbar": {
+          "background": "black",
+          "textColor": "white",
+          "fontSize": "14px",
+          "items": ["Speakers", "Sponsors", "Agenda", "Próximos Eventos", "Blog"]
+        },
+        "footer": {
+          "style": "Minimal dark footer with social links",
+          "backgroundColor": "#0A0A0A",
+          "textColor": "#B0B0B0"
+        },
+        "chatWidget": {
+          "style": "Mascot-themed assistant in corner",
+          "position": "bottom-right",
+          "messageStyle": "Speech bubble"
+        }
+      }
+    },
+    "eventStructure": {
+      "highlights": ["Conferencias", "Workshops", "Hackaton"],
+      "duration": "3 days",
+      "locations": ["Buenos Aires", "Rosario", "Mendoza", "Salta"],
+      "companies": ["Google", "AWS", "X", "Microsoft", "Vercel"],
+      "targetAudience": ["Developers", "Students", "Startups", "Tech Enthusiasts"],
+      "sponsorsCall": {
+        "style": "Highlighted section with CTA",
+        "button": {
+          "text": "QUIERO SPONSOREAR",
+          "color": "#FF2D87",
+          "rounded": true
+        }
+      }
+    },
+    "animationStyle": {
+      "transitions": "Smooth fade-ins, slides",
+      "interactiveElements": ["Hover glowing buttons", "Mascot animation", "Scrolling reveals"]
+    },
+    "brandingPrinciples": {
+      "consistency": "Maintain visual style across locations and dates",
+      "engagement": "Use of mascot and vibrant CTA to keep user attention",
+      "energy": "Colorful, exciting, fast-paced aesthetic for innovation"
+    }
+  }
+      `
       console.log('🎨 Generating images with prompt:', prompt)
 
       // Call the backend API to generate images
