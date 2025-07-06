@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -73,6 +73,51 @@ export default function StrategyPage() {
   const [isRefining, setIsRefining] = useState(false)
   const [showRefinement, setShowRefinement] = useState(false)
   const [showDetailedView, setShowDetailedView] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasSavedStrategy, setHasSavedStrategy] = useState(false)
+
+  // Check if there's a saved strategy on component mount
+  useEffect(() => {
+    try {
+      const savedStrategy = localStorage.getItem('monthlyStrategy')
+      const savedCorePlannerData = localStorage.getItem('corePlannerData')
+      
+      if (savedStrategy && savedCorePlannerData) {
+        setStrategy(JSON.parse(savedStrategy))
+        setCorePlannerData(JSON.parse(savedCorePlannerData))
+        setShowRefinement(true)
+        setHasSavedStrategy(true)
+      }
+    } catch (error) {
+      console.error('Error loading saved strategy:', error)
+    }
+  }, [])
+
+  // Function to create a new strategy (clear current one)
+  const handleNewStrategy = () => {
+    const confirmClear = window.confirm(
+      '¿Estás seguro de que quieres crear una nueva estrategia? Se perderá la estrategia actual guardada en memoria.'
+    )
+    
+    if (!confirmClear) return
+    
+    // Clear localStorage
+    localStorage.removeItem('monthlyStrategy')
+    localStorage.removeItem('corePlannerData')
+    
+    // Reset all states
+    setStrategy(null)
+    setCorePlannerData(null)
+    setShowRefinement(false)
+    setHasSavedStrategy(false)
+    setIsLoading(false)
+    setIsGenerating(false)
+    setIsRefining(false)
+    setShowDetailedView(false)
+    
+    // Reset form
+    setFocusInput('')
+  }
 
   // Función para transformar la respuesta del core planner al formato de la UI
   const transformCorePlannerResponse = (corePlannerResponse: CorePlannerResponse): StrategyResponse => {
@@ -141,7 +186,13 @@ export default function StrategyPage() {
       // Transformar y mostrar en la UI
       const transformedStrategy = transformCorePlannerResponse(result)
       setStrategy(transformedStrategy)
+      
+      // Guardar en localStorage para persistencia
+      localStorage.setItem('corePlannerData', JSON.stringify(result))
+      localStorage.setItem('monthlyStrategy', JSON.stringify(transformedStrategy))
+      
       setShowRefinement(true)
+      setHasSavedStrategy(true)
       
     } catch (error) {
       console.error('Error generating strategy:', error)
@@ -178,6 +229,10 @@ export default function StrategyPage() {
     }
     
     setStrategy(refinedStrategy)
+    
+    // Guardar estrategia refinada en localStorage
+    localStorage.setItem('monthlyStrategy', JSON.stringify(refinedStrategy))
+    
     setRefinementInput('')
     setIsRefining(false)
   }
@@ -200,15 +255,36 @@ export default function StrategyPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold gradient-text flex items-center gap-2">
-              🎯 Estrategia Mensual
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold gradient-text flex items-center gap-2">
+                🎯 Estrategia Mensual
+              </h1>
+              {hasSavedStrategy && (
+                <Badge variant="outline" className="border-brand-success/30 text-brand-success bg-brand-success/5">
+                  <Target className="h-3 w-3 mr-1" />
+                  Estrategia Guardada
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground mt-1">
-              Genera tu estrategia de contenido personalizada para el mes
+              {hasSavedStrategy 
+                ? 'Tu estrategia mensual está guardada en memoria' 
+                : 'Genera tu estrategia de contenido personalizada para el mes'
+              }
             </p>
           </div>
-          {strategy && (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
+            {hasSavedStrategy && (
+              <Button
+                variant="outline"
+                onClick={handleNewStrategy}
+                className="flex items-center gap-2 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10"
+              >
+                <Sparkles className="h-4 w-4" />
+                Nueva Estrategia
+              </Button>
+            )}
+            {strategy && (
               <Button
                 variant={showDetailedView ? "default" : "outline"}
                 onClick={() => setShowDetailedView(!showDetailedView)}
@@ -217,8 +293,8 @@ export default function StrategyPage() {
                 <FileText className="h-4 w-4" />
                 {showDetailedView ? 'Vista Resumen' : 'Vista Detallada'}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Input de Enfoque */}
