@@ -3,6 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from routes.resources import router as resources_router
 from routes.images import router as images_router
 from routes.monthly_planner import router as monthly_planner_router
@@ -31,6 +32,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files for serving generated images
+app.mount("/static", StaticFiles(directory="images_generated"), name="static")
 
 # Include routers
 app.include_router(resources_router)

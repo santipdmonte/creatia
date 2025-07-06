@@ -6,13 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { MainLayout } from '@/components/layout/main-layout'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { 
   Calendar,
   Upload,
   Edit3,
   Save,
   Image as ImageIcon,
+  Settings,
+  X,
   FileText,
   Lightbulb,
   Coffee,
@@ -35,7 +39,15 @@ interface WeeklyPost {
   content: string
   image?: string
   developedCopy?: string
-  isInSelectionMode?: boolean
+  // Additional fields from original data
+  originalPost?: {
+    dia: string
+    content_description: string
+    is_image_required: boolean
+    reference_images: string[]
+    image_detail_description?: string
+    copy_for_post?: string
+  }
 }
 
 // Mapping days to icons and numbers
@@ -74,7 +86,14 @@ const transformCorePlannerToWeeklyPosts = (corePlannerData: any): WeeklyPost[] =
         title: post.is_image_required ? 'Post con Imagen' : 'Contenido Orgánico',
         content: post.content_description || '',
         developedCopy: post.copy_for_post || '',
-        isInSelectionMode: post.is_image_required ? true : false
+        originalPost: {
+          dia: post.dia,
+          content_description: post.content_description,
+          is_image_required: post.is_image_required,
+          reference_images: post.reference_images || [],
+          image_detail_description: post.image_detail_description,
+          copy_for_post: post.copy_for_post
+        }
       }
       
       transformedPosts.push(weeklyPost)
@@ -110,8 +129,7 @@ const getDefaultWeeklyPosts = (): WeeklyPost[] => [
     icon: Coffee,
     type: 'placeholder',
     title: 'Post con Imagen',
-    content: '🌟 ¡Nuevo lunes, nuevas oportunidades! \n\nEsta semana nos enfocamos en construir hábitos que realmente transformen tu negocio. \n\n¿Sabías que el 80% del éxito empresarial viene de la consistencia en pequeñas acciones diarias? \n\n💪 Mi consejo para hoy: Elige UNA acción que puedas hacer todos los días durante esta semana. Solo una. \n\n¿Cuál será la tuya? 👇 \n\n#LunesDeMotivacion #Emprendimiento #Habitos #Exito #Consistencia',
-    isInSelectionMode: true
+    content: '🌟 ¡Nuevo lunes, nuevas oportunidades! \n\nEsta semana nos enfocamos en construir hábitos que realmente transformen tu negocio. \n\n¿Sabías que el 80% del éxito empresarial viene de la consistencia en pequeñas acciones diarias? \n\n💪 Mi consejo para hoy: Elige UNA acción que puedas hacer todos los días durante esta semana. Solo una. \n\n¿Cuál será la tuya? 👇 \n\n#LunesDeMotivacion #Emprendimiento #Habitos #Exito #Consistencia'
   },
   {
     day: 'Martes',
@@ -128,8 +146,7 @@ const getDefaultWeeklyPosts = (): WeeklyPost[] => [
     icon: Sun,
     type: 'placeholder',
     title: 'Post con Imagen',
-    content: '🔥 MITAD DE SEMANA = MOMENTO DE EVALUAR \n\n¿Cómo vas con tus objetivos? \n\nEste es mi workspace hoy, trabajando en el próximo módulo de mi programa de mentoría. \n\n✨ Recordatorio: El progreso no siempre es lineal. Algunos días avanzas 10 pasos, otros solo 1. \n\nLo importante es NO parar. \n\n💭 Pregunta de reflexión: ¿Qué pequeño paso puedes dar HOY que te acerque a tu meta? \n\nNo tiene que ser perfecto, solo tiene que ser CONSISTENTE. \n\n¡Sigamos construyendo! 💪 \n\n#MiercolesDeReflexion #Progreso #Mentalidad #Emprendimiento #Consistencia #Crecimiento',
-    isInSelectionMode: true
+    content: '🔥 MITAD DE SEMANA = MOMENTO DE EVALUAR \n\n¿Cómo vas con tus objetivos? \n\nEste es mi workspace hoy, trabajando en el próximo módulo de mi programa de mentoría. \n\n✨ Recordatorio: El progreso no siempre es lineal. Algunos días avanzas 10 pasos, otros solo 1. \n\nLo importante es NO parar. \n\n💭 Pregunta de reflexión: ¿Qué pequeño paso puedes dar HOY que te acerque a tu meta? \n\nNo tiene que ser perfecto, solo tiene que ser CONSISTENTE. \n\n¡Sigamos construyendo! 💪 \n\n#MiercolesDeReflexion #Progreso #Mentalidad #Emprendimiento #Consistencia #Crecimiento'
   },
   {
     day: 'Jueves',
@@ -146,8 +163,7 @@ const getDefaultWeeklyPosts = (): WeeklyPost[] => [
     icon: Star,
     type: 'placeholder',
     title: 'Post con Imagen',
-    content: '🎉 ¡VIERNES DE CELEBRACIÓN! \n\nEsta semana logramos: \n✅ 3 nuevos clientes para el programa \n✅ 500+ nuevos seguidores comprometidos \n✅ Lanzamiento del módulo de productividad \n✅ 2 colaboraciones estratégicas cerradas \n\n🙌 Pero lo que más me emociona... \n\nVer los resultados de mis estudiantes: \n• María aumentó sus ventas 40% \n• Carlos automatizó su proceso de leads \n• Ana lanzó su primer producto digital \n\n💡 Recordatorio: Celebra tus wins, por pequeños que parezcan. \n\nEl éxito se construye con pequeñas victorias diarias. \n\n¿Qué estás celebrando esta semana? 🎊 \n\n#ViernesDeVictoria #Celebracion #Exito #Resultados #Gratitud #Emprendimiento',
-    isInSelectionMode: true
+    content: '🎉 ¡VIERNES DE CELEBRACIÓN! \n\nEsta semana logramos: \n✅ 3 nuevos clientes para el programa \n✅ 500+ nuevos seguidores comprometidos \n✅ Lanzamiento del módulo de productividad \n✅ 2 colaboraciones estratégicas cerradas \n\n🙌 Pero lo que más me emociona... \n\nVer los resultados de mis estudiantes: \n• María aumentó sus ventas 40% \n• Carlos automatizó su proceso de leads \n• Ana lanzó su primer producto digital \n\n💡 Recordatorio: Celebra tus wins, por pequeños que parezcan. \n\nEl éxito se construye con pequeñas victorias diarias. \n\n¿Qué estás celebrando esta semana? 🎊 \n\n#ViernesDeVictoria #Celebracion #Exito #Resultados #Gratitud #Emprendimiento'
   },
   {
     day: 'Sábado',
@@ -168,12 +184,7 @@ const getDefaultWeeklyPosts = (): WeeklyPost[] => [
 ]
 
 // Placeholder images for selection
-const placeholderImages = [
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&h=400&fit=crop'
-]
+const placeholderImages: string[] = []
 
 export default function PostsSemanalesPage() {
   const [selectedImageForPreview, setSelectedImageForPreview] = useState<string | null>(null)
@@ -182,6 +193,9 @@ export default function PostsSemanalesPage() {
   const [weeklyPosts, setWeeklyPosts] = useState<WeeklyPost[]>([])
   const [isUsingCorePlannerData, setIsUsingCorePlannerData] = useState(false)
   const [hasData, setHasData] = useState(false)
+  const [selectedPostForDetail, setSelectedPostForDetail] = useState<WeeklyPost | null>(null)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [editingPost, setEditingPost] = useState<WeeklyPost | null>(null)
 
   // Load core planner data from localStorage on component mount
   useEffect(() => {
@@ -225,7 +239,7 @@ export default function PostsSemanalesPage() {
     setWeeklyPosts(prev => 
       prev.map(post => 
         post.dayNumber === dayNumber 
-          ? { ...post, image: imageUrl, isInSelectionMode: false }
+          ? { ...post, image: imageUrl }
           : post
       )
     )
@@ -241,16 +255,104 @@ export default function PostsSemanalesPage() {
     )
   }
 
+  const handleOpenDetailModal = (post: WeeklyPost) => {
+    setSelectedPostForDetail(post)
+    setEditingPost({ ...post })
+    setIsDetailModalOpen(true)
+  }
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false)
+    setSelectedPostForDetail(null)
+    setEditingPost(null)
+  }
+
+  const handleSavePostDetails = () => {
+    if (!editingPost) return
+
+    // Update the post in the main state
+    setWeeklyPosts(prev => 
+      prev.map(post => 
+        post.dayNumber === editingPost.dayNumber 
+          ? editingPost
+          : post
+      )
+    )
+
+    // Update the original data in localStorage
+    try {
+      const savedCorePlannerData = localStorage.getItem('corePlannerData')
+      if (savedCorePlannerData && editingPost.originalPost) {
+        const corePlannerData = JSON.parse(savedCorePlannerData)
+        
+        // Find and update the corresponding post in the original data
+        if (corePlannerData.monthly_plan?.mes?.semanas?.[0]?.posts) {
+          const posts = corePlannerData.monthly_plan.mes.semanas[0].posts
+          const postIndex = posts.findIndex((p: any) => 
+            p.dia.toLowerCase() === editingPost.originalPost!.dia.toLowerCase()
+          )
+          
+          if (postIndex !== -1) {
+            posts[postIndex] = {
+              ...posts[postIndex],
+              content_description: editingPost.content,
+              copy_for_post: editingPost.developedCopy,
+              image_detail_description: editingPost.originalPost.image_detail_description,
+              reference_images: editingPost.originalPost.reference_images
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('corePlannerData', JSON.stringify(corePlannerData))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error saving post details:', error)
+    }
+
+    handleCloseDetailModal()
+  }
+
+  const handleEditingPostChange = (field: string, value: any) => {
+    if (!editingPost) return
+    
+    if (field.startsWith('originalPost.')) {
+      const originalField = field.replace('originalPost.', '')
+      setEditingPost(prev => ({
+        ...prev!,
+        originalPost: {
+          ...prev!.originalPost!,
+          [originalField]: value
+        }
+      }))
+    } else {
+      setEditingPost(prev => ({
+        ...prev!,
+        [field]: value
+      }))
+    }
+  }
+
   const handleGenerateImages = async () => {
     setIsGeneratingImages(true)
     
     try {
-      // Get the Monday post content for the prompt
+      // Get the Monday post for generating images
       const mondayPost = weeklyPosts.find(post => post.dayNumber === 1)
-      if (!mondayPost || !mondayPost.content) {
-        alert('No se encontró contenido para el lunes')
+      if (!mondayPost) {
+        alert('No se encontró el post del lunes')
         return
       }
+
+      // Use the detailed image description if available, otherwise use content description
+      let prompt = mondayPost.content
+      if (mondayPost.originalPost?.image_detail_description) {
+        prompt = mondayPost.originalPost.image_detail_description
+      } else if (mondayPost.originalPost?.content_description) {
+        prompt = mondayPost.originalPost.content_description
+      }
+
+      console.log('🎨 Generating images with prompt:', prompt)
 
       // Call the backend API to generate images
       const response = await fetch('http://localhost:8000/images/generate-batch', {
@@ -259,60 +361,78 @@ export default function PostsSemanalesPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: mondayPost.content,
-          count: 4,
-          quality: 'medium',
-          size: '1024x1024',
-          output_format: 'jpeg',
-          save_directory: 'images_generated/posts_semanales',
-          filename_prefix: 'lunes_post'
+          prompt: prompt,
+          count: 3,
+          quality: "low",
+          size: "1024x1024",
+          output_format: "jpeg",
+          save_directory: "images_generated/frontend",
+          filename_prefix: "lunes_post"
         }),
       })
 
       if (!response.ok) {
-        throw new Error('Error al generar las imágenes')
+        const errorText = await response.text()
+        console.error('❌ API Error:', response.status, errorText)
+        throw new Error(`Error al generar las imágenes: ${response.status} - ${errorText}`)
       }
 
       const result = await response.json()
-      console.log('Images generated:', result)
+      console.log('✅ Images generated successfully:', result)
 
-      // Extract the generated image paths and convert them to URLs
+      // Extract the generated image paths and convert them to URLs that the frontend can access
       const generatedImages = result.results?.successful || []
       const imageUrls = generatedImages.map((img: any) => {
-        // Convert the local path to a URL that can be accessed by the frontend
-        const imagePath = img.image_path
-        return `http://localhost:8000/static/images/${imagePath.replace('images_generated/', '')}`
+        // Convert the backend path to a frontend-accessible URL
+        // The images are served through the /static endpoint we configured
+        // img.image_path = "images_generated/frontend/filename.jpeg"
+        // We need to remove "images_generated/" and use /static/ instead
+        const relativePath = img.image_path.replace('images_generated/', '')
+        return `http://localhost:8000/static/${relativePath}`
       })
+
+      console.log('🖼️ Generated image URLs:', imageUrls)
 
       // Update the generated images for Monday
       if (imageUrls.length > 0) {
         setGeneratedImagesForMonday(imageUrls)
-        
-        // Force a re-render by updating the Monday post to trigger selection mode
-        setWeeklyPosts(prev => 
-          prev.map(post => 
-            post.dayNumber === 1 
-              ? { ...post, isInSelectionMode: true, image: undefined }
-              : post
-          )
-        )
+        console.log('📋 Updated Monday images state with', imageUrls.length, 'images')
+        alert(`🎉 ¡Imágenes generadas exitosamente! ${result.results?.total_successful || 0} imágenes creadas para el lunes.`)
+      } else {
+        console.warn('⚠️ No image URLs generated')
+        alert('❌ No se pudieron generar imágenes. Intenta de nuevo.')
       }
-
-      alert(`¡Imágenes generadas exitosamente! ${result.results?.total_successful || 0} imágenes creadas.`)
       
     } catch (error) {
       console.error('Error generating images:', error)
-      alert('Error al generar las imágenes. Por favor, intenta de nuevo.')
+      alert(`Error al generar las imágenes: ${error instanceof Error ? error.message : 'Error desconocido'}`)
     } finally {
       setIsGeneratingImages(false)
     }
   }
 
   const ImageSelectionGrid = ({ dayNumber }: { dayNumber: number }) => {
-    // Use generated images for Monday if available, otherwise use placeholder images
+    // Use generated images for Monday if available, otherwise show placeholder
     const imagesToShow = dayNumber === 1 && generatedImagesForMonday.length > 0 
       ? generatedImagesForMonday 
       : placeholderImages
+
+    // If no images available, show placeholder
+    if (imagesToShow.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mx-auto mb-4">
+            <ImageIcon className="h-8 w-8 text-brand-primary/60" />
+          </div>
+          <p className="text-sm text-brand-primary/80 font-medium mb-2">
+            Imágenes pendientes de generación
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Haz click en "Generar Imágenes" para crear opciones visuales
+          </p>
+        </div>
+      )
+    }
 
     return (
       <div className="grid grid-cols-2 gap-3">
@@ -400,7 +520,7 @@ export default function PostsSemanalesPage() {
                 disabled={isGeneratingImages}
               >
                 <Sparkles className={`h-4 w-4 mr-2 ${isGeneratingImages ? 'animate-spin' : ''}`} />
-                {isGeneratingImages ? 'Generando Imágenes...' : 'Generar Imágenes para la Planificación Semanal'}
+                {isGeneratingImages ? 'Generando Imágenes...' : 'Generar Imágenes para Lunes'}
               </Button>
             )}
           </div>
@@ -501,49 +621,43 @@ export default function PostsSemanalesPage() {
               return (
                 <Card key={post.day} className="shadow-brand">
                   <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center">
-                        <IconComponent className="h-5 w-5 text-brand-primary" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                          <IconComponent className="h-5 w-5 text-brand-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg text-brand-primary">{post.day}</CardTitle>
+                          <Badge variant="outline" className="border-brand-primary/30 text-brand-primary">
+                            <ImageIcon className="h-3 w-3 mr-1" />
+                            {post.title}
+                          </Badge>
+                        </div>
                       </div>
-                      <div>
-                        <CardTitle className="text-lg text-brand-primary">{post.day}</CardTitle>
-                        <Badge variant="outline" className="border-brand-primary/30 text-brand-primary">
-                          <ImageIcon className="h-3 w-3 mr-1" />
-                          {post.title}
-                        </Badge>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDetailModal(post)}
+                        className="text-brand-primary hover:bg-brand-primary/10"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
                     {/* Layout en 2 columnas: Texto izquierda, Imagen derecha */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {/* Columna izquierda - Copy del post */}
-                      <div className="space-y-4">
-                        {/* Descripción del contenido */}
-                        <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-lg p-4">
-                          <div className="flex items-start gap-2">
-                            <Lightbulb className="h-4 w-4 text-brand-primary mt-0.5 flex-shrink-0" />
-                            <div>
-                              <h4 className="font-medium text-brand-primary mb-2">Descripción del contenido:</h4>
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {post.content}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Copy desarrollado */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-muted-foreground">
-                            Copy desarrollado para el post:
-                          </label>
-                          <Textarea
-                            placeholder={post.developedCopy || 'Copy desarrollado para el post...'}
-                            value={post.developedCopy || ''}
-                            readOnly
-                            className="min-h-[200px] focus:ring-brand-primary focus:border-brand-primary"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Copy desarrollado para el post:
+                        </label>
+                        <Textarea
+                          placeholder={post.developedCopy || 'Copy desarrollado para el post...'}
+                          value={post.developedCopy || ''}
+                          readOnly
+                          className="min-h-[300px] focus:ring-brand-primary focus:border-brand-primary"
+                        />
                       </div>
 
                       {/* Columna derecha - Área de imagen */}
@@ -574,27 +688,9 @@ export default function PostsSemanalesPage() {
                               </DialogContent>
                             </Dialog>
                           </div>
-                        ) : post.isInSelectionMode ? (
-                          <div className="space-y-3">
-                            <div className="text-center">
-                              <p className="text-sm text-brand-primary/80 font-medium mb-3">
-                                Selecciona una imagen para tu post
-                              </p>
-                            </div>
-                            <ImageSelectionGrid dayNumber={post.dayNumber} />
-                          </div>
                         ) : (
-                          <div 
-                            className="text-center cursor-pointer hover:bg-brand-primary/10 transition-colors rounded-lg p-4 aspect-square flex flex-col justify-center"
-                            onClick={() => setSelectedImageForPreview(null)}
-                          >
-                            <Upload className="h-8 w-8 mx-auto text-brand-primary/60 mb-2" />
-                            <p className="text-sm text-brand-primary/80 font-medium">
-                              Haz click para seleccionar imagen
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              JPG, PNG, WEBP hasta 5MB
-                            </p>
+                          <div className="space-y-3">
+                            <ImageSelectionGrid dayNumber={post.dayNumber} />
                           </div>
                         )}
                       </div>
@@ -609,17 +705,27 @@ export default function PostsSemanalesPage() {
               return (
                 <Card key={post.day} className="shadow-brand border-brand-secondary/20">
                   <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-brand-secondary/10 flex items-center justify-center">
-                        <IconComponent className="h-5 w-5 text-brand-secondary" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-brand-secondary/10 flex items-center justify-center">
+                          <IconComponent className="h-5 w-5 text-brand-secondary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg text-brand-secondary">{post.day}</CardTitle>
+                          <Badge variant="outline" className="border-brand-secondary/30 text-brand-secondary">
+                            <Lightbulb className="h-3 w-3 mr-1" />
+                            {post.title}
+                          </Badge>
+                        </div>
                       </div>
-                      <div>
-                        <CardTitle className="text-lg text-brand-secondary">{post.day}</CardTitle>
-                        <Badge variant="outline" className="border-brand-secondary/30 text-brand-secondary">
-                          <Lightbulb className="h-3 w-3 mr-1" />
-                          {post.title}
-                        </Badge>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDetailModal(post)}
+                        className="text-brand-secondary hover:bg-brand-secondary/10"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -659,6 +765,142 @@ export default function PostsSemanalesPage() {
         </div>
           </>
         )}
+
+        {/* Modal de Detalle del Post */}
+        <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Detalle del Post - {selectedPostForDetail?.day}
+              </DialogTitle>
+            </DialogHeader>
+            
+            {editingPost && (
+              <div className="space-y-6 mt-4">
+                {/* Información básica */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="day">Día</Label>
+                    <Input
+                      id="day"
+                      value={editingPost.day}
+                      onChange={(e) => handleEditingPostChange('day', e.target.value)}
+                      className="focus:ring-brand-primary focus:border-brand-primary"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="type">Tipo de Post</Label>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={editingPost.type === 'placeholder' ? 'default' : 'secondary'}>
+                        {editingPost.type === 'placeholder' ? '📸 Post con Imagen' : '📝 Contenido Orgánico'}
+                      </Badge>
+                      {editingPost.originalPost?.is_image_required && (
+                        <Badge variant="outline" className="text-xs">
+                          Imagen Requerida
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Descripción del contenido */}
+                <div className="space-y-2">
+                  <Label htmlFor="content">Descripción del Contenido</Label>
+                  <Textarea
+                    id="content"
+                    value={editingPost.content}
+                    onChange={(e) => handleEditingPostChange('content', e.target.value)}
+                    placeholder="Descripción del contenido del post..."
+                    className="min-h-[100px] focus:ring-brand-primary focus:border-brand-primary"
+                  />
+                </div>
+
+                {/* Copy desarrollado */}
+                <div className="space-y-2">
+                  <Label htmlFor="copy">Copy Desarrollado</Label>
+                  <Textarea
+                    id="copy"
+                    value={editingPost.developedCopy || ''}
+                    onChange={(e) => handleEditingPostChange('developedCopy', e.target.value)}
+                    placeholder="Copy completo para el post..."
+                    className="min-h-[200px] focus:ring-brand-primary focus:border-brand-primary"
+                  />
+                </div>
+
+                {/* Información de imagen (si aplica) */}
+                {editingPost.originalPost?.is_image_required && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <ImageIcon className="h-5 w-5" />
+                      Información de Imagen
+                    </h3>
+                    
+                    {/* Descripción detallada de imagen */}
+                    <div className="space-y-2">
+                      <Label htmlFor="imageDescription">Descripción Detallada de la Imagen</Label>
+                      <Textarea
+                        id="imageDescription"
+                        value={editingPost.originalPost?.image_detail_description || ''}
+                        onChange={(e) => handleEditingPostChange('originalPost.image_detail_description', e.target.value)}
+                        placeholder="Descripción detallada de cómo debería ser la imagen..."
+                        className="min-h-[100px] focus:ring-brand-primary focus:border-brand-primary"
+                      />
+                    </div>
+
+                    {/* Imágenes de referencia */}
+                    <div className="space-y-2">
+                      <Label htmlFor="referenceImages">Imágenes de Referencia</Label>
+                      <Input
+                        id="referenceImages"
+                        value={editingPost.originalPost?.reference_images?.join(', ') || ''}
+                        onChange={(e) => handleEditingPostChange('originalPost.reference_images', e.target.value.split(', ').filter(img => img.trim()))}
+                        placeholder="imagen1.jpg, imagen2.png, ..."
+                        className="focus:ring-brand-primary focus:border-brand-primary"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Separa las rutas de imágenes con comas
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Metadatos */}
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <h4 className="font-medium mb-2">Metadatos</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Día original:</span>
+                      <span className="ml-2 font-medium">{editingPost.originalPost?.dia}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Número del día:</span>
+                      <span className="ml-2 font-medium">{editingPost.dayNumber}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botones de acción */}
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={handleCloseDetailModal}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleSavePostDetails}
+                    className="bg-brand-primary hover:bg-brand-primary/90 text-white"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Guardar Cambios
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   )
