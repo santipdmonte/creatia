@@ -568,11 +568,12 @@ export default function PostsSemanalesPage() {
         body: JSON.stringify({
           prompt: prompt,
           count: 3,
-          quality: "low",
+          quality: "high",
           size: "1024x1024",
           output_format: "jpeg",
           save_directory: "images_generated/frontend",
-          filename_prefix: "lunes_post"
+          filename_prefix: "lunes_post",
+          images_url_list: ["resources_content/avatars/o_1iteckaknngm12do11h953rlftfn.webp", "resources_content/images/gld4By_68274b1c568fa_medium.webp"]
         }),
       })
 
