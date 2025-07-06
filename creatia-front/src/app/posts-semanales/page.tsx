@@ -196,25 +196,127 @@ export default function PostsSemanalesPage() {
   const [selectedPostForDetail, setSelectedPostForDetail] = useState<WeeklyPost | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [editingPost, setEditingPost] = useState<WeeklyPost | null>(null)
+  
+  // New state for managing generated images per day
+  const [generatedImagesByDay, setGeneratedImagesByDay] = useState<Record<number, string[]>>({})
 
-  // Load core planner data from localStorage on component mount
+  // Load core planner data and generated images from localStorage on component mount
   useEffect(() => {
     try {
+      // Load core planner data
       const savedCorePlannerData = localStorage.getItem('corePlannerData')
       if (savedCorePlannerData) {
         const corePlannerData = JSON.parse(savedCorePlannerData)
         const transformedPosts = transformCorePlannerToWeeklyPosts(corePlannerData)
-        setWeeklyPosts(transformedPosts)
+        
+        // Load selected images for each post
+        const savedSelectedImages = localStorage.getItem('selectedImages')
+        if (savedSelectedImages) {
+          const selectedImages = JSON.parse(savedSelectedImages)
+          // Update posts with selected images
+          const postsWithImages = transformedPosts.map(post => ({
+            ...post,
+            image: selectedImages[post.dayNumber] || undefined
+          }))
+          setWeeklyPosts(postsWithImages)
+        } else {
+          setWeeklyPosts(transformedPosts)
+        }
+        
         setIsUsingCorePlannerData(true)
         setHasData(true)
       } else {
+        // Load default posts
+        const defaultPosts = getDefaultWeeklyPosts()
+        const savedSelectedImages = localStorage.getItem('selectedImages')
+        if (savedSelectedImages) {
+          const selectedImages = JSON.parse(savedSelectedImages)
+          const postsWithImages = defaultPosts.map(post => ({
+            ...post,
+            image: selectedImages[post.dayNumber] || undefined
+          }))
+          setWeeklyPosts(postsWithImages)
+        } else {
+          setWeeklyPosts(defaultPosts)
+        }
         setHasData(false)
       }
+      
+      // Load generated images for each day
+      const savedGeneratedImages = localStorage.getItem('generatedImagesByDay')
+      if (savedGeneratedImages) {
+        const generatedImages = JSON.parse(savedGeneratedImages)
+        setGeneratedImagesByDay(generatedImages)
+        
+        // Set Monday images for backward compatibility
+        if (generatedImages[1]) {
+          setGeneratedImagesForMonday(generatedImages[1])
+        }
+      }
+      
     } catch (error) {
-      console.error('Error loading core planner data:', error)
+      console.error('Error loading saved data:', error)
       setHasData(false)
     }
   }, [])
+
+  // Function to clear all saved images
+  const clearAllImages = () => {
+    const confirmClear = window.confirm(
+      '¿Estás seguro de que quieres limpiar todas las imágenes guardadas? Esta acción no se puede deshacer.'
+    )
+    
+    if (!confirmClear) return
+    
+    try {
+      localStorage.removeItem('selectedImages')
+      localStorage.removeItem('generatedImagesByDay')
+      
+      // Clear state
+      setGeneratedImagesByDay({})
+      setGeneratedImagesForMonday([])
+      
+      // Clear images from posts
+      setWeeklyPosts(prev => 
+        prev.map(post => ({
+          ...post,
+          image: undefined
+        }))
+      )
+      
+      console.log('🗑️ Cleared all saved images')
+      alert('✅ Todas las imágenes han sido eliminadas')
+    } catch (error) {
+      console.error('Error clearing images:', error)
+      alert('❌ Error al limpiar las imágenes')
+    }
+  }
+
+  // Function to save selected images to localStorage
+  const saveSelectedImageToStorage = (dayNumber: number, imageUrl: string) => {
+    try {
+      const savedSelectedImages = localStorage.getItem('selectedImages')
+      const selectedImages = savedSelectedImages ? JSON.parse(savedSelectedImages) : {}
+      selectedImages[dayNumber] = imageUrl
+      localStorage.setItem('selectedImages', JSON.stringify(selectedImages))
+      console.log('💾 Saved selected image for day', dayNumber, ':', imageUrl)
+    } catch (error) {
+      console.error('Error saving selected image:', error)
+    }
+  }
+
+  // Function to save generated images to localStorage
+  const saveGeneratedImagesToStorage = (dayNumber: number, imageUrls: string[]) => {
+    try {
+      const savedGeneratedImages = localStorage.getItem('generatedImagesByDay')
+      const generatedImages = savedGeneratedImages ? JSON.parse(savedGeneratedImages) : {}
+      generatedImages[dayNumber] = imageUrls
+      localStorage.setItem('generatedImagesByDay', JSON.stringify(generatedImages))
+      console.log('💾 Saved generated images for day', dayNumber, ':', imageUrls.length, 'images')
+    } catch (error) {
+      console.error('Error saving generated images:', error)
+    }
+  }
 
   // Function to reload core planner data
   const handleReloadCorePlannerData = () => {
@@ -223,7 +325,20 @@ export default function PostsSemanalesPage() {
       if (savedCorePlannerData) {
         const corePlannerData = JSON.parse(savedCorePlannerData)
         const transformedPosts = transformCorePlannerToWeeklyPosts(corePlannerData)
-        setWeeklyPosts(transformedPosts)
+        
+        // Reload selected images
+        const savedSelectedImages = localStorage.getItem('selectedImages')
+        if (savedSelectedImages) {
+          const selectedImages = JSON.parse(savedSelectedImages)
+          const postsWithImages = transformedPosts.map(post => ({
+            ...post,
+            image: selectedImages[post.dayNumber] || undefined
+          }))
+          setWeeklyPosts(postsWithImages)
+        } else {
+          setWeeklyPosts(transformedPosts)
+        }
+        
         setIsUsingCorePlannerData(true)
         setHasData(true)
       } else {
@@ -236,6 +351,7 @@ export default function PostsSemanalesPage() {
   }
 
   const handleImageSelection = (dayNumber: number, imageUrl: string) => {
+    // Update the posts state
     setWeeklyPosts(prev => 
       prev.map(post => 
         post.dayNumber === dayNumber 
@@ -243,6 +359,11 @@ export default function PostsSemanalesPage() {
           : post
       )
     )
+    
+    // Save the selection to localStorage
+    saveSelectedImageToStorage(dayNumber, imageUrl)
+    
+    console.log('🖼️ Selected image for day', dayNumber, ':', imageUrl)
   }
 
   const handleContentChange = (dayNumber: number, newContent: string) => {
@@ -396,6 +517,16 @@ export default function PostsSemanalesPage() {
       // Update the generated images for Monday
       if (imageUrls.length > 0) {
         setGeneratedImagesForMonday(imageUrls)
+        
+        // Update the generatedImagesByDay state
+        setGeneratedImagesByDay(prev => ({
+          ...prev,
+          1: imageUrls // Monday is day 1
+        }))
+        
+        // Save to localStorage
+        saveGeneratedImagesToStorage(1, imageUrls)
+        
         console.log('📋 Updated Monday images state with', imageUrls.length, 'images')
         alert(`🎉 ¡Imágenes generadas exitosamente! ${result.results?.total_successful || 0} imágenes creadas para el lunes.`)
       } else {
@@ -412,19 +543,19 @@ export default function PostsSemanalesPage() {
   }
 
   const ImageSelectionGrid = ({ dayNumber }: { dayNumber: number }) => {
-    // Use generated images for Monday if available, otherwise show placeholder
-    const imagesToShow = dayNumber === 1 && generatedImagesForMonday.length > 0 
-      ? generatedImagesForMonday 
+    // Use generated images for the specific day if available, otherwise show placeholder
+    const imagesToShow = generatedImagesByDay[dayNumber] && generatedImagesByDay[dayNumber].length > 0
+      ? generatedImagesByDay[dayNumber]
       : placeholderImages
 
     // If no images available, show placeholder
     if (imagesToShow.length === 0) {
       return (
-        <div className="text-center py-8">
-          <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mx-auto mb-4">
-            <ImageIcon className="h-8 w-8 text-brand-primary/60" />
+        <div className="text-center py-6">
+          <div className="w-12 h-12 rounded-full bg-brand-primary/10 flex items-center justify-center mx-auto mb-3">
+            <ImageIcon className="h-6 w-6 text-brand-primary/60" />
           </div>
-          <p className="text-sm text-brand-primary/80 font-medium mb-2">
+          <p className="text-sm text-brand-primary/80 font-medium mb-1">
             Imágenes pendientes de generación
           </p>
           <p className="text-xs text-muted-foreground">
@@ -434,46 +565,66 @@ export default function PostsSemanalesPage() {
       )
     }
 
+    // Get the currently selected image for this day
+    const selectedImage = weeklyPosts.find(post => post.dayNumber === dayNumber)?.image
+    
     return (
-      <div className="grid grid-cols-2 gap-3">
-        {imagesToShow.map((imageUrl, index) => (
-        <div key={index} className="relative group">
-          <div 
-            className="aspect-square rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-brand-primary/50 transition-all"
-            onClick={() => handleImageSelection(dayNumber, imageUrl)}
-          >
-            <img 
-              src={imageUrl} 
-              alt={`Opción ${index + 1}`}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-            />
-          </div>
+      <div className="grid grid-cols-3 gap-2">
+        {imagesToShow.map((imageUrl, index) => {
+          const isSelected = selectedImage === imageUrl
           
-          {/* Preview button */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setSelectedImageForPreview(imageUrl)
-                }}
+          return (
+            <div key={index} className="relative group">
+              <div 
+                className={`aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                  isSelected 
+                    ? 'border-green-500 ring-2 ring-green-200' 
+                    : 'border-transparent hover:border-brand-primary/50'
+                }`}
+                onClick={() => handleImageSelection(dayNumber, imageUrl)}
               >
-                <Eye className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl">
-              <img 
-                src={imageUrl} 
-                alt="Preview" 
-                className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-        ))}
+                <img 
+                  src={imageUrl} 
+                  alt={`Opción ${index + 1}`}
+                  className={`w-full h-full object-cover transition-transform ${
+                    isSelected ? 'scale-95' : 'group-hover:scale-105'
+                  }`}
+                />
+                {isSelected && (
+                  <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
+                    <Badge className="bg-green-500 text-white text-xs">
+                      ✓
+                    </Badge>
+                  </div>
+                )}
+              </div>
+          
+            {/* Preview button */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedImageForPreview(imageUrl)
+                  }}
+                >
+                  <Eye className="h-3 w-3" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl">
+                <img 
+                  src={imageUrl} 
+                  alt="Preview" 
+                  className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+          )
+        })}
       </div>
     )
   }
@@ -511,6 +662,16 @@ export default function PostsSemanalesPage() {
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Recargar Estrategia
+              </Button>
+            )}
+            {(Object.keys(generatedImagesByDay).length > 0 || weeklyPosts.some(post => post.image)) && (
+              <Button 
+                variant="outline"
+                onClick={clearAllImages}
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Limpiar Imágenes
               </Button>
             )}
             {hasData && (
@@ -663,30 +824,48 @@ export default function PostsSemanalesPage() {
                       {/* Columna derecha - Área de imagen */}
                       <div className="border-2 border-dashed border-brand-primary/30 rounded-lg p-4 bg-brand-primary/5 h-fit">
                         {post.image ? (
-                          <div className="relative aspect-square">
-                            <img 
-                              src={post.image} 
-                              alt={`Post ${post.day}`}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  className="absolute top-2 right-2"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-4xl">
-                                <img 
-                                  src={post.image} 
-                                  alt="Preview" 
-                                  className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
-                                />
-                              </DialogContent>
-                            </Dialog>
+                          <div className="space-y-4">
+                            {/* Imagen seleccionada - formato cuadrado */}
+                            <div className="relative aspect-square">
+                              <img 
+                                src={post.image} 
+                                alt={`Post ${post.day}`}
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                              <div className="absolute top-2 left-2">
+                                <Badge className="bg-green-500 text-white text-xs">
+                                  ✓ Seleccionada
+                                </Badge>
+                              </div>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    className="absolute top-2 right-2"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl">
+                                  <img 
+                                    src={post.image} 
+                                    alt="Preview" 
+                                    className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                                  />
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                            
+                            {/* Mostrar otras opciones si existen - más pequeñas */}
+                            {generatedImagesByDay[post.dayNumber] && generatedImagesByDay[post.dayNumber].length > 0 && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-2 text-center">
+                                  Otras opciones disponibles:
+                                </p>
+                                <ImageSelectionGrid dayNumber={post.dayNumber} />
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="space-y-3">
