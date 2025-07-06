@@ -7,6 +7,7 @@ from routes.images import router as images_router
 from routes.monthly_planner import router as monthly_planner_router
 from routes.strategist import router as strategist_router
 from routes.weekly_planner import router as weekly_planner_router
+from routes.core_planner import router as core_planner_router
 
 load_dotenv()
 
@@ -22,6 +23,7 @@ app.include_router(images_router)
 app.include_router(monthly_planner_router)
 app.include_router(strategist_router)
 app.include_router(weekly_planner_router)
+app.include_router(core_planner_router)
 
 @app.get("/")
 async def root():
