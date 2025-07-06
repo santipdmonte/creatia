@@ -518,16 +518,32 @@ export default function PostsSemanalesPage() {
                     {/* Layout en 2 columnas: Texto izquierda, Imagen derecha */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {/* Columna izquierda - Copy del post */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          Copy del post:
-                        </label>
-                        <Textarea
-                          placeholder={post.content}
-                          value={post.content}
-                          onChange={(e) => handleContentChange(post.dayNumber, e.target.value)}
-                          className="min-h-[200px] focus:ring-brand-primary focus:border-brand-primary"
-                        />
+                      <div className="space-y-4">
+                        {/* Descripción del contenido */}
+                        <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-lg p-4">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="h-4 w-4 text-brand-primary mt-0.5 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-medium text-brand-primary mb-2">Descripción del contenido:</h4>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {post.content}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Copy desarrollado */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-muted-foreground">
+                            Copy desarrollado para el post:
+                          </label>
+                          <Textarea
+                            placeholder={post.developedCopy || 'Copy desarrollado para el post...'}
+                            value={post.developedCopy || ''}
+                            readOnly
+                            className="min-h-[200px] focus:ring-brand-primary focus:border-brand-primary"
+                          />
+                        </div>
                       </div>
 
                       {/* Columna derecha - Área de imagen */}
