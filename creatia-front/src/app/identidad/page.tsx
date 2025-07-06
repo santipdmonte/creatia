@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { MainLayout } from '@/components/layout/main-layout'
 import { 
   Upload, 
@@ -18,7 +19,11 @@ import {
   Users, 
   Target, 
   Package,
-  Brain
+  Brain,
+  Palette,
+  Settings,
+  Copy,
+  Save
 } from 'lucide-react'
 
 interface BrandData {
@@ -29,6 +34,36 @@ interface BrandData {
   brandIdentity: string
   targetAudience: string
   productsServices: string
+}
+
+interface BrandIdentityConfig {
+  brandIdentity: {
+    name: string
+    tagline: string
+    tone: string
+    colorPalette: {
+      primary: string
+      secondary: string
+      accent1: string
+      accent2: string
+      background: string
+      textLight: string
+      textMuted: string
+    }
+    typography: {
+      headingFont: string
+      bodyFont: string
+      headingWeight: string
+      bodyWeight: string
+      textTransform: string
+      textColor: string
+    }
+    mascot: {
+      description: string
+      style: string
+      uses: string[]
+    }
+  }
 }
 
 const sections = [
@@ -98,6 +133,7 @@ export default function BrandIdentityPage() {
     productsServices: ''
   })
 
+  const [brandConfig, setBrandConfig] = useState<BrandIdentityConfig | null>(null)
   const [expandedHints, setExpandedHints] = useState<Record<string, boolean>>({})
 
   // Cargar datos del sessionStorage al montar el componente
@@ -106,6 +142,20 @@ export default function BrandIdentityPage() {
     if (savedData) {
       setBrandData(JSON.parse(savedData))
     }
+  }, [])
+
+  // Cargar configuración de marca desde el archivo JSON
+  useEffect(() => {
+    const loadBrandConfig = async () => {
+      try {
+        const response = await fetch('/brand_identity.json')
+        const config = await response.json()
+        setBrandConfig(config)
+      } catch (error) {
+        console.error('Error loading brand config:', error)
+      }
+    }
+    loadBrandConfig()
   }, [])
 
   // Guardar datos en sessionStorage cada vez que cambien
@@ -163,63 +213,253 @@ export default function BrandIdentityPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Logo Upload */}
-            <div className="space-y-3">
-              <Label htmlFor="logo" className="text-sm font-medium">Logo de tu marca</Label>
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 border-2 border-dashed border-brand-primary/30 rounded-xl flex items-center justify-center overflow-hidden bg-brand-primary/5">
-                  {brandData.logo ? (
-                    <img src={brandData.logo} alt="Logo" className="w-full h-full object-cover rounded-lg" />
-                  ) : (
-                    <Upload className="h-8 w-8 text-brand-primary/60" />
-                  )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Columna Izquierda - Información Básica */}
+              <div className="space-y-6">
+                {/* Logo Upload */}
+                <div className="space-y-3">
+                  <Label htmlFor="logo" className="text-sm font-medium">Logo de tu marca</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 border-2 border-dashed border-brand-primary/30 rounded-xl flex items-center justify-center overflow-hidden bg-brand-primary/5">
+                      {brandData.logo ? (
+                        <img src={brandData.logo} alt="Logo" className="w-full h-full object-cover rounded-lg" />
+                      ) : (
+                        <Upload className="h-8 w-8 text-brand-primary/60" />
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        id="logo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById('logo')?.click()}
+                        className="border-brand-primary/30 hover:bg-brand-primary/10"
+                      >
+                        Subir Logo
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <input
-                    id="logo"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => document.getElementById('logo')?.click()}
-                    className="border-brand-primary/30 hover:bg-brand-primary/10"
-                  >
-                    Subir Logo
-                  </Button>
-                </div>
-              </div>
-            </div>
 
-            {/* Website y Instagram */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="website" className="flex items-center gap-2 text-sm font-medium">
-                  <Globe className="h-4 w-4 text-brand-secondary" />
-                  Sitio Web
-                </Label>
-                <Input
-                  id="website"
-                  placeholder="https://tu-sitio-web.com"
-                  value={brandData.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
-                  className="focus:ring-brand-secondary focus:border-brand-secondary"
-                />
+                {/* Website y Instagram */}
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="website" className="flex items-center gap-2 text-sm font-medium">
+                      <Globe className="h-4 w-4 text-brand-secondary" />
+                      Sitio Web
+                    </Label>
+                    <Input
+                      id="website"
+                      placeholder="https://tu-sitio-web.com"
+                      value={brandData.website}
+                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      className="focus:ring-brand-secondary focus:border-brand-secondary"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram" className="flex items-center gap-2 text-sm font-medium">
+                      <Instagram className="h-4 w-4 text-pink-500" />
+                      Instagram
+                    </Label>
+                    <Input
+                      id="instagram"
+                      placeholder="@tu_instagram"
+                      value={brandData.instagram}
+                      onChange={(e) => handleInputChange('instagram', e.target.value)}
+                      className="focus:ring-pink-500 focus:border-pink-500"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="instagram" className="flex items-center gap-2 text-sm font-medium">
-                  <Instagram className="h-4 w-4 text-pink-500" />
-                  Instagram
-                </Label>
-                <Input
-                  id="instagram"
-                  placeholder="@tu_instagram"
-                  value={brandData.instagram}
-                  onChange={(e) => handleInputChange('instagram', e.target.value)}
-                  className="focus:ring-pink-500 focus:border-pink-500"
-                />
+
+              {/* Columna Derecha - Estilo de Marca */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-5 w-5 text-brand-primary" />
+                    <h3 className="text-lg font-semibold text-brand-primary">Estilo de Marca</h3>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Configurar
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Settings className="h-5 w-5" />
+                          Configuración de Identidad de Marca
+                        </DialogTitle>
+                        <DialogDescription>
+                          Visualiza y modifica la configuración JSON de tu identidad de marca
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium">Archivo de Configuración</Label>
+                          <Button variant="outline" size="sm" className="flex items-center gap-2">
+                            <Copy className="h-4 w-4" />
+                            Copiar JSON
+                          </Button>
+                        </div>
+                        
+                        <div className="relative">
+                          <Textarea
+                            value={brandConfig ? JSON.stringify(brandConfig, null, 2) : ''}
+                            readOnly
+                            className="min-h-[400px] font-mono text-xs bg-muted/30 overflow-auto"
+                            placeholder="Cargando configuración..."
+                          />
+                        </div>
+                        
+                        <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+                          <h4 className="font-medium text-sm flex items-center gap-2">
+                            <Palette className="h-4 w-4" />
+                            Vista Previa de Colores
+                          </h4>
+                          {brandConfig && (
+                            <div className="grid grid-cols-4 gap-2">
+                              <div className="text-center">
+                                <div 
+                                  className="w-12 h-12 rounded-lg mx-auto mb-1 border border-gray-300 shadow-sm"
+                                  style={{ backgroundColor: brandConfig.brandIdentity.colorPalette.primary }}
+                                />
+                                <p className="text-xs font-medium">Primario</p>
+                                <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.colorPalette.primary}</p>
+                              </div>
+                              <div className="text-center">
+                                <div 
+                                  className="w-12 h-12 rounded-lg mx-auto mb-1 border border-gray-300 shadow-sm"
+                                  style={{ backgroundColor: brandConfig.brandIdentity.colorPalette.secondary }}
+                                />
+                                <p className="text-xs font-medium">Secundario</p>
+                                <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.colorPalette.secondary}</p>
+                              </div>
+                              <div className="text-center">
+                                <div 
+                                  className="w-12 h-12 rounded-lg mx-auto mb-1 border border-gray-300 shadow-sm"
+                                  style={{ backgroundColor: brandConfig.brandIdentity.colorPalette.accent1 }}
+                                />
+                                <p className="text-xs font-medium">Acento 1</p>
+                                <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.colorPalette.accent1}</p>
+                              </div>
+                              <div className="text-center">
+                                <div 
+                                  className="w-12 h-12 rounded-lg mx-auto mb-1 border border-gray-300 shadow-sm"
+                                  style={{ backgroundColor: brandConfig.brandIdentity.colorPalette.accent2 }}
+                                />
+                                <p className="text-xs font-medium">Acento 2</p>
+                                <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.colorPalette.accent2}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <DialogFooter>
+                        <Button variant="outline">
+                          Cancelar
+                        </Button>
+                        <Button className="flex items-center gap-2">
+                          <Save className="h-4 w-4" />
+                          Guardar Cambios
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                
+                {brandConfig ? (
+                  <div className="space-y-5">
+                    {/* Paleta de Colores - Primero y más prominente */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm text-muted-foreground">PALETA DE COLORES</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-6 h-6 rounded-full border border-gray-300 shadow-sm" 
+                            style={{ backgroundColor: brandConfig.brandIdentity.colorPalette.primary }}
+                          />
+                          <div>
+                            <span className="text-sm font-medium">Primario</span>
+                            <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.colorPalette.primary}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-6 h-6 rounded-full border border-gray-300 shadow-sm" 
+                            style={{ backgroundColor: brandConfig.brandIdentity.colorPalette.secondary }}
+                          />
+                          <div>
+                            <span className="text-sm font-medium">Secundario</span>
+                            <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.colorPalette.secondary}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-6 h-6 rounded-full border border-gray-300 shadow-sm" 
+                            style={{ backgroundColor: brandConfig.brandIdentity.colorPalette.accent1 }}
+                          />
+                          <div>
+                            <span className="text-sm font-medium">Acento 1</span>
+                            <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.colorPalette.accent1}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-6 h-6 rounded-full border border-gray-300 shadow-sm" 
+                            style={{ backgroundColor: brandConfig.brandIdentity.colorPalette.accent2 }}
+                          />
+                          <div>
+                            <span className="text-sm font-medium">Acento 2</span>
+                            <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.colorPalette.accent2}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Información General */}
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm text-muted-foreground">INFORMACIÓN GENERAL</h4>
+                      <div className="space-y-1">
+                        <p className="text-sm"><span className="font-medium">Nombre:</span> {brandConfig.brandIdentity.name}</p>
+                        <p className="text-sm"><span className="font-medium">Tagline:</span> {brandConfig.brandIdentity.tagline}</p>
+                        <p className="text-sm"><span className="font-medium">Tono:</span> {brandConfig.brandIdentity.tone}</p>
+                      </div>
+                    </div>
+
+                    {/* Tipografía */}
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm text-muted-foreground">TIPOGRAFÍA</h4>
+                      <div className="space-y-1">
+                        <p className="text-sm"><span className="font-medium">Encabezados:</span> {brandConfig.brandIdentity.typography.headingFont}</p>
+                        <p className="text-sm"><span className="font-medium">Cuerpo:</span> {brandConfig.brandIdentity.typography.bodyFont}</p>
+                      </div>
+                    </div>
+
+                    {/* Mascota */}
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm text-muted-foreground">MASCOTA</h4>
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">{brandConfig.brandIdentity.mascot.description}</p>
+                        <p className="text-xs text-muted-foreground">Estilo: {brandConfig.brandIdentity.mascot.style}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Palette className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Cargando configuración de marca...</p>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
