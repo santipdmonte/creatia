@@ -7,6 +7,7 @@ import enum
 from typing import Optional, List
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from dotenv import load_dotenv
@@ -92,8 +93,13 @@ class CorePlannerAgentService:
         """
         try:
             config = {"configurable": {"thread_id": thread_id}}
-            
-            response = self.agent.invoke({"messages": message}, config=config)
+
+            response = self.agent.invoke(
+                input={
+                    "messages": [HumanMessage(content=message)]
+                },
+                config=config,
+            )
             
             if 'structured_response' in response:
                 return {
