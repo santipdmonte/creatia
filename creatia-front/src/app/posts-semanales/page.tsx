@@ -22,7 +22,8 @@ import {
   Moon,
   Star,
   Eye,
-  Sparkles
+  Sparkles,
+  Target
 } from 'lucide-react'
 
 interface WeeklyPost {
@@ -178,8 +179,9 @@ export default function PostsSemanalesPage() {
   const [selectedImageForPreview, setSelectedImageForPreview] = useState<string | null>(null)
   const [isGeneratingImages, setIsGeneratingImages] = useState(false)
   const [generatedImagesForMonday, setGeneratedImagesForMonday] = useState<string[]>([])
-  const [weeklyPosts, setWeeklyPosts] = useState<WeeklyPost[]>(getDefaultWeeklyPosts())
+  const [weeklyPosts, setWeeklyPosts] = useState<WeeklyPost[]>([])
   const [isUsingCorePlannerData, setIsUsingCorePlannerData] = useState(false)
+  const [hasData, setHasData] = useState(false)
 
   // Load core planner data from localStorage on component mount
   useEffect(() => {
@@ -190,10 +192,13 @@ export default function PostsSemanalesPage() {
         const transformedPosts = transformCorePlannerToWeeklyPosts(corePlannerData)
         setWeeklyPosts(transformedPosts)
         setIsUsingCorePlannerData(true)
+        setHasData(true)
+      } else {
+        setHasData(false)
       }
     } catch (error) {
       console.error('Error loading core planner data:', error)
-      // Keep default posts if there's an error
+      setHasData(false)
     }
   }, [])
 
@@ -206,6 +211,7 @@ export default function PostsSemanalesPage() {
         const transformedPosts = transformCorePlannerToWeeklyPosts(corePlannerData)
         setWeeklyPosts(transformedPosts)
         setIsUsingCorePlannerData(true)
+        setHasData(true)
       } else {
         alert('No hay datos de estrategia guardados. Ve a la página de Estrategia para generar un plan.')
       }
@@ -387,46 +393,84 @@ export default function PostsSemanalesPage() {
                 Recargar Estrategia
               </Button>
             )}
-            <Button 
-              className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
-              onClick={handleGenerateImages}
-              disabled={isGeneratingImages}
-            >
-              <Sparkles className={`h-4 w-4 mr-2 ${isGeneratingImages ? 'animate-spin' : ''}`} />
-              {isGeneratingImages ? 'Generando Imágenes...' : 'Generar Imágenes para la Planificación Semanal'}
-            </Button>
+            {hasData && (
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
+                onClick={handleGenerateImages}
+                disabled={isGeneratingImages}
+              >
+                <Sparkles className={`h-4 w-4 mr-2 ${isGeneratingImages ? 'animate-spin' : ''}`} />
+                {isGeneratingImages ? 'Generando Imágenes...' : 'Generar Imágenes para la Planificación Semanal'}
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Resumen de la semana */}
-        <Card className="shadow-brand border-brand-accent/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-brand-accent">
-              <FileText className="h-5 w-5" />
-              Resumen de la Semana
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div className="space-y-1">
-                <div className="text-2xl font-bold text-brand-primary">3</div>
-                <div className="text-xs text-muted-foreground">Posts con Imagen</div>
+        {/* Estado vacío cuando no hay datos */}
+        {!hasData ? (
+          <Card className="shadow-brand border-brand-accent/20">
+            <CardContent className="text-center py-12">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                  <Calendar className="h-8 w-8 text-brand-primary/60" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-brand-primary">
+                    No hay estrategia mensual
+                  </h3>
+                  <p className="text-muted-foreground max-w-md">
+                    Para ver los posts semanales, primero necesitas generar una estrategia mensual.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => window.location.href = '/estrategia'}
+                  className="bg-brand-primary hover:bg-brand-primary/90 text-white"
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  Ir a Estrategia
+                </Button>
               </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-bold text-brand-secondary">2</div>
-                <div className="text-xs text-muted-foreground">Contenido Orgánico</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-bold text-brand-success">5</div>
-                <div className="text-xs text-muted-foreground">Posts Totales</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-bold text-brand-accent">2</div>
-                <div className="text-xs text-muted-foreground">Días de Descanso</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Resumen de la semana */}
+            <Card className="shadow-brand border-brand-accent/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-brand-accent">
+                  <FileText className="h-5 w-5" />
+                  Resumen de la Semana
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div className="space-y-1">
+                    <div className="text-2xl font-bold text-brand-primary">
+                      {weeklyPosts.filter(p => p.type === 'placeholder').length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Posts con Imagen</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-2xl font-bold text-brand-secondary">
+                      {weeklyPosts.filter(p => p.type === 'organic').length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Contenido Orgánico</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-2xl font-bold text-brand-success">
+                      {weeklyPosts.filter(p => p.type !== 'empty').length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Posts Totales</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-2xl font-bold text-brand-accent">
+                      {weeklyPosts.filter(p => p.type === 'empty').length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Días de Descanso</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
         {/* Posts por Día */}
         <div className="space-y-4">
@@ -597,7 +641,9 @@ export default function PostsSemanalesPage() {
             }
           })}
         </div>
+          </>
+        )}
       </div>
     </MainLayout>
   )
-} 
+}
