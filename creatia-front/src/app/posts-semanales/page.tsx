@@ -21,7 +21,8 @@ import {
   Sunset,
   Moon,
   Star,
-  Eye
+  Eye,
+  Sparkles
 } from 'lucide-react'
 
 interface WeeklyPost {
@@ -46,6 +47,8 @@ const placeholderImages = [
 
 export default function PostsSemanalesPage() {
   const [selectedImageForPreview, setSelectedImageForPreview] = useState<string | null>(null)
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false)
+  const [generatedImagesForMonday, setGeneratedImagesForMonday] = useState<string[]>([])
   
   const [weeklyPosts, setWeeklyPosts] = useState<WeeklyPost[]>([
     {
@@ -131,9 +134,82 @@ export default function PostsSemanalesPage() {
     )
   }
 
-  const ImageSelectionGrid = ({ dayNumber }: { dayNumber: number }) => (
-    <div className="grid grid-cols-2 gap-3">
-      {placeholderImages.map((imageUrl, index) => (
+  const handleGenerateImages = async () => {
+    setIsGeneratingImages(true)
+    
+    try {
+      // Get the Monday post content for the prompt
+      const mondayPost = weeklyPosts.find(post => post.dayNumber === 1)
+      if (!mondayPost || !mondayPost.content) {
+        alert('No se encontró contenido para el lunes')
+        return
+      }
+
+      // Call the backend API to generate images
+      const response = await fetch('http://localhost:8000/images/generate-batch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: mondayPost.content,
+          count: 4,
+          quality: 'medium',
+          size: '1024x1024',
+          output_format: 'jpeg',
+          save_directory: 'images_generated/posts_semanales',
+          filename_prefix: 'lunes_post'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al generar las imágenes')
+      }
+
+      const result = await response.json()
+      console.log('Images generated:', result)
+
+      // Extract the generated image paths and convert them to URLs
+      const generatedImages = result.results?.successful || []
+      const imageUrls = generatedImages.map((img: any) => {
+        // Convert the local path to a URL that can be accessed by the frontend
+        const imagePath = img.image_path
+        return `http://localhost:8000/static/images/${imagePath.replace('images_generated/', '')}`
+      })
+
+      // Update the generated images for Monday
+      if (imageUrls.length > 0) {
+        setGeneratedImagesForMonday(imageUrls)
+        
+        // Force a re-render by updating the Monday post to trigger selection mode
+        setWeeklyPosts(prev => 
+          prev.map(post => 
+            post.dayNumber === 1 
+              ? { ...post, isInSelectionMode: true, image: undefined }
+              : post
+          )
+        )
+      }
+
+      alert(`¡Imágenes generadas exitosamente! ${result.results?.total_successful || 0} imágenes creadas.`)
+      
+    } catch (error) {
+      console.error('Error generating images:', error)
+      alert('Error al generar las imágenes. Por favor, intenta de nuevo.')
+    } finally {
+      setIsGeneratingImages(false)
+    }
+  }
+
+  const ImageSelectionGrid = ({ dayNumber }: { dayNumber: number }) => {
+    // Use generated images for Monday if available, otherwise use placeholder images
+    const imagesToShow = dayNumber === 1 && generatedImagesForMonday.length > 0 
+      ? generatedImagesForMonday 
+      : placeholderImages
+
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        {imagesToShow.map((imageUrl, index) => (
         <div key={index} className="relative group">
           <div 
             className="aspect-square rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-brand-primary/50 transition-all"
@@ -170,9 +246,10 @@ export default function PostsSemanalesPage() {
             </DialogContent>
           </Dialog>
         </div>
-      ))}
-    </div>
-  )
+        ))}
+      </div>
+    )
+  }
 
   return (
     <MainLayout>
@@ -187,9 +264,13 @@ export default function PostsSemanalesPage() {
               Planifica y organiza tu contenido para toda la semana
             </p>
           </div>
-          <Button className="gradient-brand text-white">
-            <Save className="h-4 w-4 mr-2" />
-            Guardar Planificación
+          <Button 
+            className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400"
+            onClick={handleGenerateImages}
+            disabled={isGeneratingImages}
+          >
+            <Sparkles className={`h-4 w-4 mr-2 ${isGeneratingImages ? 'animate-spin' : ''}`} />
+            {isGeneratingImages ? 'Generando Imágenes...' : 'Generar Imágenes para la Planificación Semanal'}
           </Button>
         </div>
 
