@@ -26,7 +26,7 @@ export function Sidebar({ className }: SidebarProps) {
     { name: "Identidad de Marca", icon: Brain, href: "/identidad" },
     { name: "Estrategia", icon: Target, href: "/estrategia" },
     { name: "Contenido", icon: FileText, href: "/contenido" },
-    { name: "Analíticas", icon: BarChart3, href: "/analiticas" },
+    { name: "Posts Semanales", icon: Calendar, href: "/posts-semanales" },
   ];
 
   const bottomNavigation = [
