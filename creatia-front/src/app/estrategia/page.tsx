@@ -24,6 +24,31 @@ import {
   Clock
 } from 'lucide-react'
 
+interface CorePlannerResponse {
+  success: boolean
+  monthly_plan?: {
+    mes: {
+      mes_description: string
+      mes_objetivos: string
+      pilares_contenido: string[]
+      semanas: {
+        semana_description: string
+        semana_objetivos: string
+        posts: {
+          dia: string
+          content_description: string
+          is_image_required: boolean
+          reference_images: string[]
+          image_detail_description?: string
+          copy_for_post?: string
+        }[]
+      }[]
+    }
+  }
+  error?: string
+  thread_id?: string
+}
+
 interface StrategyResponse {
   monthlyTheme: string
   objectives: string[]
@@ -43,61 +68,31 @@ export default function StrategyPage() {
   const [focusInput, setFocusInput] = useState('')
   const [refinementInput, setRefinementInput] = useState('')
   const [strategy, setStrategy] = useState<StrategyResponse | null>(null)
+  const [corePlannerData, setCorePlannerData] = useState<CorePlannerResponse | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isRefining, setIsRefining] = useState(false)
   const [showRefinement, setShowRefinement] = useState(false)
+  const [showDetailedView, setShowDetailedView] = useState(false)
 
-  // Mock API call - será reemplazada por la API real
-  const generateStrategy = async (prompt: string, previousStrategy?: StrategyResponse) => {
-    setIsGenerating(true)
+  // Función para transformar la respuesta del core planner al formato de la UI
+  const transformCorePlannerResponse = (corePlannerResponse: CorePlannerResponse): StrategyResponse => {
+    if (!corePlannerResponse.monthly_plan) {
+      throw new Error('No monthly plan data received')
+    }
+
+    const { mes } = corePlannerResponse.monthly_plan
     
-    // Simular llamada a API
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    const mockStrategy: StrategyResponse = {
-      monthlyTheme: `Estrategia enfocada en: ${prompt}`,
-      objectives: [
-        'Aumentar el engagement en un 25% durante el mes',
-        'Generar 3 leads cualificados por semana',
-        'Incrementar el alcance orgánico en redes sociales',
-        'Posicionar la marca como referente en el sector'
-      ],
-      contentPillars: [
-        'Contenido educativo y tips',
-        'Behind the scenes y storytelling',
-        'Testimonios y casos de éxito',
-        'Tendencias del sector'
-      ],
-      weeklyBreakdown: [
-        {
-          week: 1,
-          theme: 'Introducción y awareness',
-          goals: ['Presentar el enfoque del mes', 'Generar expectativa'],
-          contentTypes: ['Posts informativos', 'Stories interactivos', 'Video intro'],
-          keyDates: ['Lunes: Post de lanzamiento', 'Miércoles: Live Q&A']
-        },
-        {
-          week: 2,
-          theme: 'Educación y valor',
-          goals: ['Aportar valor educativo', 'Demostrar expertise'],
-          contentTypes: ['Tutoriales', 'Infografías', 'Carrusel educativo'],
-          keyDates: ['Martes: Tutorial paso a paso', 'Viernes: Tips del experto']
-        },
-        {
-          week: 3,
-          theme: 'Casos de éxito',
-          goals: ['Mostrar resultados reales', 'Generar confianza'],
-          contentTypes: ['Testimonios', 'Antes/después', 'Case studies'],
-          keyDates: ['Lunes: Testimonio cliente', 'Jueves: Caso de estudio']
-        },
-        {
-          week: 4,
-          theme: 'Cierre y llamada a la acción',
-          goals: ['Convertir engagement en leads', 'Preparar próximo mes'],
-          contentTypes: ['CTA posts', 'Ofertas especiales', 'Resumen mensual'],
-          keyDates: ['Miércoles: Oferta especial', 'Domingo: Resumen del mes']
-        }
-      ],
+    return {
+      monthlyTheme: mes.mes_description,
+      objectives: mes.mes_objetivos.split('\n').filter(obj => obj.trim()),
+      contentPillars: mes.pilares_contenido,
+      weeklyBreakdown: mes.semanas.map((semana, index) => ({
+        week: index + 1,
+        theme: semana.semana_description,
+        goals: semana.semana_objetivos.split('\n').filter(goal => goal.trim()),
+        contentTypes: semana.posts.map(post => post.content_description),
+        keyDates: semana.posts.map(post => `${post.dia}: ${post.content_description.substring(0, 50)}...`)
+      })),
       hashtags: [
         '#MarketingDigital', '#Estrategia', '#Contenido', '#Branding',
         '#SocialMedia', '#Engagement', '#Growth', '#Marketing'
@@ -109,10 +104,59 @@ export default function StrategyPage() {
         'Seguidores nuevos: +200'
       ]
     }
+  }
+
+  // Llamada real a la API del core planner
+  const generateStrategy = async (prompt: string, previousStrategy?: StrategyResponse) => {
+    setIsGenerating(true)
     
-    setStrategy(mockStrategy)
-    setIsGenerating(false)
-    setShowRefinement(true)
+    try {
+      const response = await fetch('http://localhost:8000/core-planner/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: prompt,
+          thread_id: `strategy-${Date.now()}`
+        }),
+      })
+
+      if (!response.ok) {
+        if (response.status === 0) {
+          throw new Error('No se puede conectar con el servidor. Asegúrate de que el backend esté ejecutándose en el puerto 8000.')
+        }
+        throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
+      }
+
+      const result: CorePlannerResponse = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Error generating strategy')
+      }
+
+      // Guardar la respuesta original del core planner
+      setCorePlannerData(result)
+      
+      // Transformar y mostrar en la UI
+      const transformedStrategy = transformCorePlannerResponse(result)
+      setStrategy(transformedStrategy)
+      setShowRefinement(true)
+      
+    } catch (error) {
+      console.error('Error generating strategy:', error)
+      let errorMessage = 'Error desconocido'
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = 'No se puede conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8000'
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      
+      alert(`Error al generar la estrategia: ${errorMessage}`)
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const refineStrategy = async () => {
@@ -163,6 +207,18 @@ export default function StrategyPage() {
               Genera tu estrategia de contenido personalizada para el mes
             </p>
           </div>
+          {strategy && (
+            <div className="flex gap-2">
+              <Button
+                variant={showDetailedView ? "default" : "outline"}
+                onClick={() => setShowDetailedView(!showDetailedView)}
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                {showDetailedView ? 'Vista Resumen' : 'Vista Detallada'}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Input de Enfoque */}
@@ -212,8 +268,98 @@ export default function StrategyPage() {
           </Card>
         )}
 
-        {/* Estrategia Generada */}
-        {strategy && (
+        {/* Vista Detallada del Core Planner */}
+        {strategy && corePlannerData && showDetailedView && (
+          <div className="space-y-6">
+            <Card className="shadow-brand">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-brand-primary">
+                  <Calendar className="h-5 w-5" />
+                  Plan Mensual Detallado
+                </CardTitle>
+                <CardDescription>
+                  Planificación completa con contenido diario específico
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Información del Mes */}
+                  <div className="bg-muted/30 p-4 rounded-lg">
+                    <h3 className="font-semibold text-lg mb-2">📅 {corePlannerData.monthly_plan?.mes.mes_description}</h3>
+                    <p className="text-sm text-muted-foreground mb-3">{corePlannerData.monthly_plan?.mes.mes_objetivos}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {corePlannerData.monthly_plan?.mes.pilares_contenido.map((pilar, index) => (
+                        <Badge key={index} variant="secondary" className="bg-brand-primary/10 text-brand-primary">
+                          {pilar}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Semanas Detalladas */}
+                  {corePlannerData.monthly_plan?.mes.semanas.map((semana, semanaIndex) => (
+                    <div key={semanaIndex} className="border rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm font-bold">
+                          {semanaIndex + 1}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">{semana.semana_description}</h4>
+                          <p className="text-sm text-muted-foreground">{semana.semana_objetivos}</p>
+                        </div>
+                      </div>
+
+                      {/* Posts Diarios */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {semana.posts.map((post, postIndex) => (
+                          <div key={postIndex} className="bg-muted/20 p-3 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-6 h-6 rounded bg-brand-secondary text-white flex items-center justify-center text-xs font-bold">
+                                {post.dia.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-medium capitalize text-sm">{post.dia}</span>
+                              {post.is_image_required && (
+                                <Badge variant="outline" className="text-xs">
+                                  📸 Imagen
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {post.content_description}
+                            </p>
+                            
+                            {post.copy_for_post && (
+                              <div className="bg-background/50 p-2 rounded text-xs">
+                                <span className="font-medium">Copy:</span>
+                                <p className="mt-1">{post.copy_for_post.length > 100 ? post.copy_for_post.substring(0, 100) + '...' : post.copy_for_post}</p>
+                              </div>
+                            )}
+                            
+                            {post.image_detail_description && (
+                              <div className="mt-2 text-xs text-muted-foreground">
+                                <span className="font-medium">Imagen:</span> {post.image_detail_description}
+                              </div>
+                            )}
+                            
+                            {post.reference_images && post.reference_images.length > 0 && (
+                              <div className="mt-2 text-xs text-muted-foreground">
+                                <span className="font-medium">Referencias:</span> {post.reference_images.join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Estrategia Generada (Vista Resumen) */}
+        {strategy && !showDetailedView && (
           <div className="space-y-6">
             {/* Tema Principal */}
             <Card className="shadow-brand">
@@ -251,15 +397,15 @@ export default function StrategyPage() {
 
               <Card className="shadow-brand">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-brand-accent">
-                    <FileText className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-brand-secondary">
+                    <Users className="h-5 w-5" />
                     Pilares de Contenido
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {strategy.contentPillars.map((pillar, index) => (
-                      <Badge key={index} variant="outline" className="border-brand-accent/30 text-brand-accent">
+                      <Badge key={index} variant="secondary" className="bg-brand-primary/10 text-brand-primary">
                         {pillar}
                       </Badge>
                     ))}
@@ -268,59 +414,73 @@ export default function StrategyPage() {
               </Card>
             </div>
 
-            {/* Planificación Semanal */}
+            {/* Desglose Semanal */}
             <Card className="shadow-brand">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-brand-primary">
                   <Calendar className="h-5 w-5" />
                   Planificación Semanal
                 </CardTitle>
+                <CardDescription>
+                  Desglose detallado por semanas del mes
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {strategy.weeklyBreakdown.map((week) => (
-                    <div key={week.week} className="border rounded-lg p-4 bg-muted/30">
-                      <h4 className="font-semibold text-brand-primary mb-2">
-                        Semana {week.week}: {week.theme}
-                      </h4>
-                      
-                      <div className="space-y-3">
-                        <div>
-                          <h5 className="text-sm font-medium text-muted-foreground mb-1">Objetivos:</h5>
-                          <ul className="text-sm space-y-1">
-                            {week.goals.map((goal, idx) => (
-                              <li key={idx} className="flex items-start gap-1">
-                                <span className="text-brand-primary">•</span>
-                                {goal}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        
-                        <div>
-                          <h5 className="text-sm font-medium text-muted-foreground mb-1">Tipos de contenido:</h5>
-                          <div className="flex flex-wrap gap-1">
-                            {week.contentTypes.map((type, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs">
-                                {type}
-                              </Badge>
-                            ))}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {strategy.weeklyBreakdown.map((week, index) => (
+                    <Card key={index} className="border-l-4 border-l-brand-primary/60 hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                              {week.week}
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-lg leading-tight mb-1">{week.theme}</h4>
+                            <p className="text-sm text-muted-foreground">Semana {week.week}</p>
                           </div>
                         </div>
-                        
+                      </CardHeader>
+                      
+                      <CardContent className="pt-0 space-y-4">
+                        {/* Objetivos */}
                         <div>
-                          <h5 className="text-sm font-medium text-muted-foreground mb-1">Fechas clave:</h5>
-                          <ul className="text-xs space-y-1">
-                            {week.keyDates.map((date, idx) => (
-                              <li key={idx} className="flex items-center gap-1">
-                                <Clock className="h-3 w-3 text-brand-secondary" />
-                                {date}
+                          <div className="flex items-center gap-2 mb-2">
+                            <Target className="h-4 w-4 text-brand-secondary" />
+                            <span className="font-medium text-brand-secondary text-sm">Objetivos</span>
+                          </div>
+                          <ul className="space-y-1 ml-6">
+                            {week.goals.map((goal, goalIndex) => (
+                              <li key={goalIndex} className="flex items-start gap-2 text-sm">
+                                <div className="w-1.5 h-1.5 rounded-full bg-brand-primary/60 mt-2 flex-shrink-0"></div>
+                                <span className="text-muted-foreground leading-relaxed">{goal}</span>
                               </li>
                             ))}
                           </ul>
                         </div>
-                      </div>
-                    </div>
+                        
+                        {/* Tipos de contenido */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <FileText className="h-4 w-4 text-brand-secondary" />
+                            <span className="font-medium text-brand-secondary text-sm">Tipos de contenido</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 ml-6">
+                            {week.contentTypes.slice(0, 4).map((type, typeIndex) => (
+                              <Badge key={typeIndex} variant="secondary" className="text-xs bg-brand-primary/10 text-brand-primary border-brand-primary/20 hover:bg-brand-primary/20 transition-colors">
+                                {type.length > 25 ? type.substring(0, 25) + '...' : type}
+                              </Badge>
+                            ))}
+                            {week.contentTypes.length > 4 && (
+                              <Badge variant="outline" className="text-xs text-muted-foreground">
+                                +{week.contentTypes.length - 4} más
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </CardContent>
@@ -338,7 +498,7 @@ export default function StrategyPage() {
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {strategy.hashtags.map((hashtag, index) => (
-                      <Badge key={index} variant="outline" className="border-brand-secondary/30 text-brand-secondary">
+                      <Badge key={index} variant="outline" className="text-brand-primary border-brand-primary/30">
                         {hashtag}
                       </Badge>
                     ))}
@@ -348,16 +508,16 @@ export default function StrategyPage() {
 
               <Card className="shadow-brand">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-brand-success">
-                    <TrendingUp className="h-5 w-5" />
-                    KPIs a Medir
+                  <CardTitle className="flex items-center gap-2 text-brand-secondary">
+                    <FileText className="h-5 w-5" />
+                    KPIs a Monitorear
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
                     {strategy.kpis.map((kpi, index) => (
                       <li key={index} className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-brand-success rounded-full"></div>
+                        <Clock className="h-4 w-4 text-brand-accent" />
                         <span className="text-sm">{kpi}</span>
                       </li>
                     ))}
@@ -365,64 +525,60 @@ export default function StrategyPage() {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Acciones */}
-            {showRefinement && (
-              <Card className="shadow-brand border-brand-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-brand-primary">
-                    <Edit3 className="h-5 w-5" />
-                    ¿Quieres Ajustar la Estrategia?
-                  </CardTitle>
-                  <CardDescription>
-                    Puedes aceptar esta estrategia o solicitar ajustes específicos
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="refinement">Ajustes o cambios que quieres hacer:</Label>
-                    <Textarea
-                      id="refinement"
-                      placeholder="Ej: Me gustaría incluir más contenido sobre casos de éxito, enfocarme más en video content, agregar colaboraciones con influencers..."
-                      value={refinementInput}
-                      onChange={(e) => setRefinementInput(e.target.value)}
-                      className="min-h-[80px] focus:ring-brand-primary focus:border-brand-primary"
-                      disabled={isRefining}
-                    />
-                  </div>
-                  
-                  <div className="flex gap-3">
-                    <Button 
-                      onClick={refineStrategy}
-                      variant="outline"
-                      disabled={!refinementInput.trim() || isRefining}
-                      className="border-brand-primary text-brand-primary hover:bg-brand-primary/10"
-                    >
-                      {isRefining ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Refinando...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4 mr-2" />
-                          Refinar Estrategia
-                        </>
-                      )}
-                    </Button>
-                    
-                    <Button 
-                      onClick={acceptStrategy}
-                      className="gradient-brand text-white"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Aceptar Estrategia
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
+        )}
+
+        {/* Sección de Refinamiento */}
+        {showRefinement && (
+          <Card className="shadow-brand border-brand-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-brand-primary">
+                <Edit3 className="h-5 w-5" />
+                Refinar Estrategia
+              </CardTitle>
+              <CardDescription>
+                ¿Quieres ajustar algo específico de esta estrategia?
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Ej: Me gustaría incluir más contenido sobre casos de éxito, o enfocarme más en video contenido..."
+                value={refinementInput}
+                onChange={(e) => setRefinementInput(e.target.value)}
+                className="min-h-[80px] focus:ring-brand-primary focus:border-brand-primary"
+                disabled={isRefining}
+              />
+              
+              <div className="flex gap-3">
+                <Button 
+                  onClick={refineStrategy}
+                  variant="outline"
+                  disabled={!refinementInput.trim() || isRefining}
+                  className="border-brand-primary text-brand-primary hover:bg-brand-primary/10"
+                >
+                  {isRefining ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Refinando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Refinar Estrategia
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={acceptStrategy}
+                  className="gradient-brand text-white"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Aceptar Estrategia
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </MainLayout>
