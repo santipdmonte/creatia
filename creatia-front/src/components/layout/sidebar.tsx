@@ -6,7 +6,9 @@ import {
   Image, 
   BarChart3, 
   Settings, 
-  HelpCircle
+  HelpCircle,
+  Brain,
+  FileText
 } from "lucide-react";
 
 interface SidebarProps {
@@ -16,14 +18,13 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const navigation = [
     { name: "Panel", icon: LayoutDashboard, href: "/", current: true },
-    { name: "Configuración", icon: Target, href: "#", current: false },
-    { name: "Estrategia", icon: Calendar, href: "#", current: false },
-    { name: "Contenido", icon: Image, href: "/contenido", current: false },
-    { name: "Analíticas", icon: BarChart3, href: "#", current: false },
+    { name: "Identidad de Marca", icon: Brain, href: "/identidad", current: false },
+    { name: "Estrategia", icon: Target, href: "/estrategia", current: false },
+    { name: "Contenido", icon: FileText, href: "/contenido", current: false },
+    { name: "Analíticas", icon: BarChart3, href: "/analiticas", current: false },
   ];
 
   const bottomNavigation = [
-    { name: "Configuración", icon: Settings, href: "#" },
     { name: "Ayuda", icon: HelpCircle, href: "#" },
   ];
 
