@@ -195,8 +195,8 @@ export default function BrandIdentityPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold gradient-text flex items-center gap-2">
-              🧠 Identidad de Marca
+            <h1 className="text-3xl font-light creatia-title flex items-center gap-2">
+              Identidad de Marca
             </h1>
             <p className="text-muted-foreground mt-1">
               Define la personalidad de tu marca para generar contenido personalizado
@@ -208,7 +208,7 @@ export default function BrandIdentityPage() {
         <Card className="shadow-brand">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-brand-primary">
-              <Upload className="h-5 w-5" />
+              <Upload className="h-5 w-5 text-cyan-400" />
               Información Básica
             </CardTitle>
           </CardHeader>
@@ -224,7 +224,7 @@ export default function BrandIdentityPage() {
                       {brandData.logo ? (
                         <img src={brandData.logo} alt="Logo" className="w-full h-full object-cover rounded-lg" />
                       ) : (
-                        <Upload className="h-8 w-8 text-brand-primary/60" />
+                        <Upload className="h-8 w-8 text-cyan-400/60" />
                       )}
                     </div>
                     <div>
@@ -250,7 +250,7 @@ export default function BrandIdentityPage() {
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="website" className="flex items-center gap-2 text-sm font-medium">
-                      <Globe className="h-4 w-4 text-brand-secondary" />
+                      <Globe className="h-4 w-4 text-cyan-400" />
                       Sitio Web
                     </Label>
                     <Input
@@ -265,6 +265,7 @@ export default function BrandIdentityPage() {
                     <Label htmlFor="instagram" className="flex items-center gap-2 text-sm font-medium">
                       <Instagram className="h-4 w-4 text-pink-500" />
                       Instagram
+                      {brandData.instagram && <span className="text-xs text-green-500">↗ 📈</span>}
                     </Label>
                     <Input
                       id="instagram"
@@ -281,20 +282,20 @@ export default function BrandIdentityPage() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Palette className="h-5 w-5 text-brand-primary" />
+                    <Palette className="h-5 w-5 text-cyan-400" />
                     <h3 className="text-lg font-semibold text-brand-primary">Estilo de Marca</h3>
                   </div>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
+                        <Settings className="h-4 w-4 text-cyan-400" />
                         Configurar
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
                       <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                          <Settings className="h-5 w-5" />
+                          <Settings className="h-5 w-5 text-cyan-400" />
                           Configuración de Identidad de Marca
                         </DialogTitle>
                         <DialogDescription>
@@ -306,7 +307,7 @@ export default function BrandIdentityPage() {
                         <div className="flex items-center justify-between">
                           <Label className="text-sm font-medium">Archivo de Configuración</Label>
                           <Button variant="outline" size="sm" className="flex items-center gap-2">
-                            <Copy className="h-4 w-4" />
+                            <Copy className="h-4 w-4 text-cyan-400" />
                             Copiar JSON
                           </Button>
                         </div>
@@ -322,7 +323,7 @@ export default function BrandIdentityPage() {
                         
                         <div className="bg-muted/30 rounded-lg p-4 space-y-2">
                           <h4 className="font-medium text-sm flex items-center gap-2">
-                            <Palette className="h-4 w-4" />
+                            <Palette className="h-4 w-4 text-cyan-400" />
                             Vista Previa de Colores
                           </h4>
                           {brandConfig && (
@@ -369,7 +370,7 @@ export default function BrandIdentityPage() {
                           Cancelar
                         </Button>
                         <Button className="flex items-center gap-2">
-                          <Save className="h-4 w-4" />
+                          <Save className="h-4 w-4 text-white" />
                           Guardar Cambios
                         </Button>
                       </DialogFooter>
@@ -456,8 +457,11 @@ export default function BrandIdentityPage() {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <Palette className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <Palette className="h-12 w-12 mx-auto mb-2 opacity-50 text-cyan-400" />
                     <p className="text-sm">Cargando configuración de marca...</p>
+                    <div className="flex justify-center mt-2">
+                      <span className="text-xs text-cyan-400">⟳ Procesando...</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -470,7 +474,7 @@ export default function BrandIdentityPage() {
           <Card key={section.id} className="shadow-brand">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-brand-primary">
-                <section.icon className="h-5 w-5" />
+                <section.icon className="h-5 w-5 text-cyan-400" />
                 {section.title}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -486,13 +490,13 @@ export default function BrandIdentityPage() {
                   className="w-full justify-between p-0 h-auto font-normal"
                 >
                   <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <HelpCircle className="h-4 w-4" />
+                    <HelpCircle className="h-4 w-4 text-cyan-400" />
                     Guía de preguntas para completar esta sección
                   </span>
                   {expandedHints[section.id] ? (
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4 text-green-500" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4 text-cyan-400" />
                   )}
                 </Button>
                 
@@ -501,7 +505,7 @@ export default function BrandIdentityPage() {
                     <ul className="space-y-2">
                       {section.questions.map((question, index) => (
                         <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                          <span className="text-brand-primary font-medium">•</span>
+                          <span className="text-cyan-400 font-medium">▸</span>
                           {question}
                         </li>
                       ))}
@@ -529,9 +533,10 @@ export default function BrandIdentityPage() {
 
         {/* Botón de Guardar */}
         <div className="flex justify-end">
-          <Button className="gradient-brand text-white px-6">
-            <Brain className="h-4 w-4 mr-2" />
+          <Button className="btn-primary px-6">
+            <Brain className="h-4 w-4 mr-2 text-black" />
             Guardar Identidad de Marca
+            <span className="ml-2">🚀</span>
           </Button>
         </div>
       </div>

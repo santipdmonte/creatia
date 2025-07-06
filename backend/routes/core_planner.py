@@ -8,6 +8,7 @@ router = APIRouter(prefix="/core-planner", tags=["core-planner"])
 class CorePlannerRequest(BaseModel):
     message: str
     thread_id: Optional[str] = "default"
+    company_info: Optional[str] = ""
 
 class CorePlannerResponse(BaseModel):
     success: bool
@@ -37,7 +38,8 @@ async def generate_monthly_content_plan(request: CorePlannerRequest):
         
         result = service.generate_monthly_content_plan(
             message=request.message,
-            thread_id=request.thread_id or "default"
+            thread_id=request.thread_id or "default",
+            company_info=request.company_info or ""
         )
         
         return CorePlannerResponse(

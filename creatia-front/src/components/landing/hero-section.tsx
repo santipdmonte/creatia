@@ -18,14 +18,14 @@ export function HeroSection() {
             <div className="flex items-center justify-center w-12 h-12 rounded-xl gradient-brand shadow-brand-lg">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold gradient-text">Creatia</span>
+            <span className="text-2xl font-light creatia-title">creatIA</span>
           </div>
 
           {/* Main headline */}
           <div className="space-y-4">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-balance">
               Contenido Potenciado
-              <span className="gradient-text block">por Inteligencia Artificial</span>
+              <span className="creatia-tagline block">crea automatiza impacta</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground text-balance max-w-3xl mx-auto">
               Genera contenido consistente y alineado con tu marca para redes sociales con nuestra 

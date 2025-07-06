@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
   
   /* Creatia Brand Colors */
@@ -57,81 +57,81 @@
 :root {
   --radius: 0.75rem;
   
-  /* Creatia Brand Colors - Light Mode */
-  --brand-primary: #8B5CF6;
-  --brand-secondary: #3B82F6;
-  --brand-accent: #F59E0B;
+  /* Creatia Brand Colors - New Palette */
+  --brand-primary: #D0D0D0;
+  --brand-secondary: #4A4A4A;
+  --brand-accent: #00FFFF;
   --brand-success: #10B981;
   --brand-warning: #F59E0B;
   --brand-error: #EF4444;
   
-  /* Light Mode Colors */
-  --background: #FFFFFF;
-  --foreground: #1E293B;
-  --card: #FFFFFF;
-  --card-foreground: #1E293B;
-  --popover: #FFFFFF;
-  --popover-foreground: #1E293B;
-  --primary: #8B5CF6;
-  --primary-foreground: #FFFFFF;
-  --secondary: #F1F5F9;
-  --secondary-foreground: #334155;
-  --muted: #F8FAFC;
-  --muted-foreground: #64748B;
-  --accent: #F1F5F9;
-  --accent-foreground: #334155;
+  /* Light Mode Colors - Creatia Dark Theme */
+  --background: #000000;
+  --foreground: #D0D0D0;
+  --card: #1A1A1A;
+  --card-foreground: #D0D0D0;
+  --popover: #1A1A1A;
+  --popover-foreground: #D0D0D0;
+  --primary: #D0D0D0;
+  --primary-foreground: #000000;
+  --secondary: #4A4A4A;
+  --secondary-foreground: #D0D0D0;
+  --muted: #2A2A2A;
+  --muted-foreground: #8F8F8F;
+  --accent: #00FFFF;
+  --accent-foreground: #000000;
   --destructive: #EF4444;
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #8B5CF6;
-  --chart-1: #8B5CF6;
-  --chart-2: #3B82F6;
-  --chart-3: #10B981;
-  --chart-4: #F59E0B;
+  --border: #4A4A4A;
+  --input: #2A2A2A;
+  --ring: #D0D0D0;
+  --chart-1: #D0D0D0;
+  --chart-2: #4A4A4A;
+  --chart-3: #8F8F8F;
+  --chart-4: #00FFFF;
   --chart-5: #EF4444;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #1E293B;
-  --sidebar-primary: #8B5CF6;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #334155;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #8B5CF6;
+  --sidebar: #000000;
+  --sidebar-foreground: #D0D0D0;
+  --sidebar-primary: #D0D0D0;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #4A4A4A;
+  --sidebar-accent-foreground: #D0D0D0;
+  --sidebar-border: #4A4A4A;
+  --sidebar-ring: #D0D0D0;
 }
 
 .dark {
-  /* Dark Mode Colors */
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --card: #1E293B;
-  --card-foreground: #F8FAFC;
-  --popover: #1E293B;
-  --popover-foreground: #F8FAFC;
-  --primary: #A78BFA;
-  --primary-foreground: #1E293B;
-  --secondary: #334155;
-  --secondary-foreground: #F8FAFC;
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
-  --accent: #334155;
-  --accent-foreground: #F8FAFC;
-  --destructive: #F87171;
-  --border: #334155;
-  --input: #334155;
-  --ring: #A78BFA;
-  --chart-1: #A78BFA;
-  --chart-2: #60A5FA;
-  --chart-3: #34D399;
-  --chart-4: #FBBF24;
-  --chart-5: #F87171;
-  --sidebar: #1E293B;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #A78BFA;
-  --sidebar-primary-foreground: #1E293B;
-  --sidebar-accent: #334155;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #334155;
-  --sidebar-ring: #A78BFA;
+  /* Dark Mode Colors - Creatia Enhanced Dark */
+  --background: #000000;
+  --foreground: #D0D0D0;
+  --card: #1A1A1A;
+  --card-foreground: #D0D0D0;
+  --popover: #1A1A1A;
+  --popover-foreground: #D0D0D0;
+  --primary: #D0D0D0;
+  --primary-foreground: #000000;
+  --secondary: #4A4A4A;
+  --secondary-foreground: #D0D0D0;
+  --muted: #2A2A2A;
+  --muted-foreground: #8F8F8F;
+  --accent: #00FFFF;
+  --accent-foreground: #000000;
+  --destructive: #EF4444;
+  --border: #4A4A4A;
+  --input: #2A2A2A;
+  --ring: #D0D0D0;
+  --chart-1: #D0D0D0;
+  --chart-2: #4A4A4A;
+  --chart-3: #8F8F8F;
+  --chart-4: #00FFFF;
+  --chart-5: #EF4444;
+  --sidebar: #000000;
+  --sidebar-foreground: #D0D0D0;
+  --sidebar-primary: #D0D0D0;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #4A4A4A;
+  --sidebar-accent-foreground: #D0D0D0;
+  --sidebar-border: #4A4A4A;
+  --sidebar-ring: #D0D0D0;
 }
 
 @layer base {
@@ -149,31 +149,36 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-light tracking-wider;
+    letter-spacing: 0.05em;
   }
   
   h1 {
-    @apply text-4xl lg:text-5xl;
+    @apply text-4xl lg:text-5xl font-light;
   }
   
   h2 {
-    @apply text-3xl lg:text-4xl;
+    @apply text-3xl lg:text-4xl font-light;
   }
   
   h3 {
-    @apply text-2xl lg:text-3xl;
+    @apply text-2xl lg:text-3xl font-normal;
   }
   
   h4 {
-    @apply text-xl lg:text-2xl;
+    @apply text-xl lg:text-2xl font-normal;
   }
   
   h5 {
-    @apply text-lg lg:text-xl;
+    @apply text-lg lg:text-xl font-normal;
   }
   
   h6 {
-    @apply text-base lg:text-lg;
+    @apply text-base lg:text-lg font-normal;
+  }
+  
+  p {
+    @apply font-normal;
   }
 }
 
@@ -186,16 +191,64 @@
     @apply bg-gradient-to-r from-brand-primary to-brand-secondary;
   }
   
+  .btn-primary {
+    background-color: #00FFFF;
+    color: #000000;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #00E5E5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
+  }
+  
+  .badge-pending {
+    background: linear-gradient(90deg, #4A4A4A 0%, #4A4A4A 100%);
+    color: #ffffff;
+    font-weight: 500;
+    border: none;
+    min-width: 90px;
+  }
+  
+  .badge-completed {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: #FFFFFF;
+    font-weight: 500;
+    border: none;
+  }
+  
   .gradient-text {
-    @apply bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent;
+    background: linear-gradient(90deg, #D0D0D0 0%, #4A4A4A 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .creatia-title {
+    background: linear-gradient(90deg, #D0D0D0 0%, #6c6c6c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.05em;
+  }
+  
+  .creatia-tagline {
+    color: #8F8F8F;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
   
   .shadow-brand {
-    box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.15);
+    box-shadow: 0 4px 14px 0 rgba(208, 208, 208, 0.15);
   }
   
   .shadow-brand-lg {
-    box-shadow: 0 10px 25px -3px rgba(139, 92, 246, 0.1), 0 4px 6px -2px rgba(139, 92, 246, 0.05);
+    box-shadow: 0 10px 25px -3px rgba(208, 208, 208, 0.1), 0 4px 6px -2px rgba(208, 208, 208, 0.05);
   }
   
   .border-brand {

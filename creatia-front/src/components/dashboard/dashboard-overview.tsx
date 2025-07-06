@@ -88,7 +88,7 @@ export function DashboardOverview() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold gradient-text">¡Bienvenido de vuelta!</h1>
+        <h1 className="text-3xl font-light creatia-title">¡Bienvenido de vuelta!</h1>
         <p className="text-muted-foreground">
           Esto es lo que está pasando con tu estrategia de contenido hoy.
         </p>
@@ -148,7 +148,7 @@ export function DashboardOverview() {
                   </div>
                 </div>
                 <div className="flex-shrink-0">
-                  <Badge variant={activity.status === "completado" ? "default" : "secondary"}>
+                  <Badge className={activity.status === "completado" ? "badge-completed" : "badge-pending"}>
                     {activity.status}
                   </Badge>
                 </div>

@@ -71,13 +71,17 @@ const transformCorePlannerToWeeklyPosts = (corePlannerData: any): WeeklyPost[] =
 
   const firstWeekPosts = corePlannerData.monthly_plan.mes.semanas[0].posts
   const transformedPosts: WeeklyPost[] = []
+  const processedDays = new Set<number>() // Track processed day numbers to avoid duplicates
 
-  // Transform each post from the first week
+  // Transform each post from the first week, ensuring unique days
   firstWeekPosts.forEach((post: any) => {
     const dayKey = post.dia?.toLowerCase()
     const dayConfig = dayMapping[dayKey as keyof typeof dayMapping]
     
-    if (dayConfig) {
+    if (dayConfig && !processedDays.has(dayConfig.number)) {
+      // Mark this day as processed
+      processedDays.add(dayConfig.number)
+      
       const weeklyPost: WeeklyPost = {
         day: post.dia.charAt(0).toUpperCase() + post.dia.slice(1).toLowerCase(),
         dayNumber: dayConfig.number,
@@ -721,7 +725,7 @@ export default function PostsSemanalesPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold gradient-text flex items-center gap-2">
+              <h1 className="text-3xl font-light creatia-title flex items-center gap-2">
                 📅 Posts Semanales
               </h1>
               {isUsingCorePlannerData && (
@@ -846,7 +850,7 @@ export default function PostsSemanalesPage() {
             // Días de descanso
             if (post.type === 'empty') {
               return (
-                <Card key={post.day} className="opacity-50">
+                <Card key={post.dayNumber} className="opacity-50">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
@@ -865,7 +869,7 @@ export default function PostsSemanalesPage() {
             // Posts con placeholder de imagen
             if (post.type === 'placeholder') {
               return (
-                <Card key={post.day} className="shadow-brand">
+                <Card key={post.dayNumber} className="shadow-brand">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -967,7 +971,7 @@ export default function PostsSemanalesPage() {
                         // Posts de contenido orgánico
             if (post.type === 'organic') {
               return (
-                <Card key={post.day} className="shadow-brand border-brand-secondary/20">
+                <Card key={post.dayNumber} className="shadow-brand border-brand-secondary/20">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">

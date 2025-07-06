@@ -17,7 +17,9 @@ import {
   Image as ImageIcon,
   Layout,
   Plus,
-  Eye
+  Eye,
+  CheckCircle,
+  TrendingUp
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -140,7 +142,7 @@ export function ContentManager() {
                 {/* Overlay con acciones al hacer hover */}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
                   <Button size="sm" variant="secondary" className="h-8 w-8 p-0">
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-4 h-4 text-cyan-400" />
                   </Button>
                   <Button size="sm" variant="destructive" className="h-8 w-8 p-0">
                     <Trash2 className="w-4 h-4" />
@@ -150,7 +152,10 @@ export function ContentManager() {
               
               <CardContent className="p-3">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium truncate">{item.name}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium truncate">{item.name}</p>
+                    <CheckCircle className="w-3 h-3 text-green-500" />
+                  </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{item.size}</span>
                     <span>{new Date(item.uploadDate).toLocaleDateString('es-ES')}</span>
@@ -166,7 +171,7 @@ export function ContentManager() {
           <Card className="overflow-hidden border-dashed border-2 hover:border-brand-primary transition-colors cursor-pointer">
             <div className="aspect-square flex items-center justify-center bg-muted/30 hover:bg-muted/50 transition-colors">
               <div className="text-center">
-                <Plus className="w-8 h-8 mx-auto text-muted-foreground group-hover:text-brand-primary transition-colors" />
+                <Plus className="w-8 h-8 mx-auto text-muted-foreground group-hover:text-cyan-400 transition-colors" />
                 <p className="text-xs text-muted-foreground mt-2">Agregar nuevo</p>
               </div>
             </div>
@@ -181,18 +186,18 @@ export function ContentManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Gestión de Contenido</h1>
+          <h1 className="text-3xl font-light creatia-title">Gestión de Contenido</h1>
           <p className="text-muted-foreground mt-1">
             Organiza y gestiona todos tus recursos visuales
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={loadContentData} disabled={loading}>
-            <Upload className="w-4 h-4 mr-2" />
+            <Upload className="w-4 h-4 mr-2 text-cyan-400" />
             {loading ? 'Cargando...' : 'Refrescar'}
           </Button>
           <Button variant="outline">
-            <Upload className="w-4 h-4 mr-2" />
+            <Upload className="w-4 h-4 mr-2 text-cyan-400" />
             Subir Archivos
           </Button>
         </div>
@@ -202,7 +207,7 @@ export function ContentManager() {
       <div className="flex items-center justify-between space-x-4">
         <div className="flex items-center space-x-2 flex-1 max-w-md">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cyan-400" />
             <Input 
               placeholder="Buscar archivos..." 
               className="pl-10"
@@ -211,24 +216,26 @@ export function ContentManager() {
             />
           </div>
           <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4" />
+            <Filter className="w-4 h-4 text-cyan-400" />
           </Button>
         </div>
         
-        <div className="flex items-center space-x-1 border rounded-lg p-1">
+        <div className="flex items-center space-x-1 border rounded-lg p-1 bg-muted/20">
           <Button 
-            variant={viewMode === 'grid' ? 'default' : 'ghost'} 
+            variant="ghost"
             size="sm"
             onClick={() => setViewMode('grid')}
+            className={viewMode === 'grid' ? 'bg-cyan-400/20 hover:bg-cyan-400/30' : 'hover:bg-muted/50'}
           >
-            <Grid3X3 className="w-4 h-4" />
+            <Grid3X3 className={`w-4 h-4 ${viewMode === 'grid' ? 'text-cyan-400' : 'text-muted-foreground'}`} />
           </Button>
           <Button 
-            variant={viewMode === 'list' ? 'default' : 'ghost'} 
+            variant="ghost"
             size="sm"
             onClick={() => setViewMode('list')}
+            className={viewMode === 'list' ? 'bg-cyan-400/20 hover:bg-cyan-400/30' : 'hover:bg-muted/50'}
           >
-            <List className="w-4 h-4" />
+            <List className={`w-4 h-4 ${viewMode === 'list' ? 'text-cyan-400' : 'text-muted-foreground'}`} />
           </Button>
         </div>
       </div>
@@ -238,7 +245,7 @@ export function ContentManager() {
         <TabsList className="grid w-full grid-cols-4">
           {tabs.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id} className="flex items-center space-x-2">
-              <tab.icon className="w-4 h-4" />
+              <tab.icon className="w-4 h-4 text-cyan-400" />
               <span className="hidden sm:inline">{tab.label}</span>
               <Badge variant="secondary" className="ml-1">
                 {tab.count}
@@ -252,8 +259,8 @@ export function ContentManager() {
             <Card>
               <CardHeader>
                 <div className="flex items-center space-x-2">
-                  <tab.icon className="w-5 h-5" />
-                  <CardTitle>{tab.label}</CardTitle>
+                  <tab.icon className="w-5 h-5 text-cyan-400" />
+                  <CardTitle className="text-brand-primary">{tab.label}</CardTitle>
                 </div>
                 <CardDescription>
                   {tab.description}
@@ -262,14 +269,30 @@ export function ContentManager() {
               <CardContent>
                 {loading ? (
                   <div className="text-center text-muted-foreground py-8">
-                    <div className="w-8 h-8 mx-auto mb-4 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 mx-auto mb-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
                     <p>Cargando imágenes...</p>
                   </div>
+                ) : contentData[tab.id as keyof typeof contentData].length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    <tab.icon className="w-12 h-12 mx-auto mb-4 opacity-50 text-cyan-400" />
+                    <p>No hay {tab.label.toLowerCase()} disponibles</p>
+                    <p className="text-xs mt-2">Sube tus primeros archivos para comenzar</p>
+                  </div>
                 ) : viewMode === 'grid' ? (
-                  renderContentGrid(contentData[tab.id as keyof typeof contentData])
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-muted-foreground">
+                          {contentData[tab.id as keyof typeof contentData].length} archivos disponibles
+                        </span>
+                      </div>
+                    </div>
+                    {renderContentGrid(contentData[tab.id as keyof typeof contentData])}
+                  </div>
                 ) : (
                   <div className="text-center text-muted-foreground py-8">
-                    <List className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <List className="w-12 h-12 mx-auto mb-4 opacity-50 text-cyan-400" />
                     <p>Vista de lista próximamente</p>
                   </div>
                 )}

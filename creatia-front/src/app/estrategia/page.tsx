@@ -156,6 +156,24 @@ export default function StrategyPage() {
     setIsGenerating(true)
     
     try {
+      // Obtener datos de identidad de marca del sessionStorage
+      const brandIdentityData = sessionStorage.getItem('brandIdentityData')
+      let company_info = ''
+      
+      if (brandIdentityData) {
+        const brandData = JSON.parse(brandIdentityData)
+        
+        // Concatenar todos los datos de identidad de marca
+        company_info = [
+          brandData.website ? `Sitio web: ${brandData.website}` : '',
+          brandData.instagram ? `Instagram: ${brandData.instagram}` : '',
+          brandData.generalInfo ? `Información general: ${brandData.generalInfo}` : '',
+          brandData.brandIdentity ? `Identidad de marca: ${brandData.brandIdentity}` : '',
+          brandData.targetAudience ? `Público objetivo: ${brandData.targetAudience}` : '',
+          brandData.productsServices ? `Productos/Servicios: ${brandData.productsServices}` : ''
+        ].filter(item => item !== '').join('\n\n')
+      }
+      
       const response = await fetch('http://localhost:8000/core-planner/generate', {
         method: 'POST',
         headers: {
@@ -163,7 +181,8 @@ export default function StrategyPage() {
         },
         body: JSON.stringify({
           message: prompt,
-          thread_id: `strategy-${Date.now()}`
+          thread_id: `strategy-${Date.now()}`,
+          company_info: company_info
         }),
       })
 
@@ -215,26 +234,68 @@ export default function StrategyPage() {
     
     setIsRefining(true)
     
-    // Simular refinamiento
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // Actualizar estrategia con refinamiento
-    const refinedStrategy: StrategyResponse = {
-      ...strategy,
-      monthlyTheme: `${strategy.monthlyTheme} (Refinado: ${refinementInput})`,
-      objectives: [
-        ...strategy.objectives,
-        `Objetivo adicional basado en: ${refinementInput}`
-      ]
+    try {
+      // Obtener datos de identidad de marca del sessionStorage
+      const brandIdentityData = sessionStorage.getItem('brandIdentityData')
+      let company_info = ''
+      
+      if (brandIdentityData) {
+        const brandData = JSON.parse(brandIdentityData)
+        
+        // Concatenar todos los datos de identidad de marca
+        company_info = [
+          brandData.website ? `Sitio web: ${brandData.website}` : '',
+          brandData.instagram ? `Instagram: ${brandData.instagram}` : '',
+          brandData.generalInfo ? `Información general: ${brandData.generalInfo}` : '',
+          brandData.brandIdentity ? `Identidad de marca: ${brandData.brandIdentity}` : '',
+          brandData.targetAudience ? `Público objetivo: ${brandData.targetAudience}` : '',
+          brandData.productsServices ? `Productos/Servicios: ${brandData.productsServices}` : ''
+        ].filter(item => item !== '').join('\n\n')
+      }
+      
+      // Llamar a la API del core planner con el refinamiento
+      const refinementPrompt = `Refina la estrategia existente basándote en este feedback: ${refinementInput}`
+      
+      const response = await fetch('http://localhost:8000/core-planner/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: refinementPrompt,
+          thread_id: corePlannerData?.thread_id || `strategy-${Date.now()}`,
+          company_info: company_info
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
+      }
+
+      const result: CorePlannerResponse = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Error refining strategy')
+      }
+
+      // Actualizar con la nueva respuesta del core planner
+      setCorePlannerData(result)
+      
+      // Transformar y mostrar en la UI
+      const refinedStrategy = transformCorePlannerResponse(result)
+      setStrategy(refinedStrategy)
+      
+      // Guardar en localStorage
+      localStorage.setItem('corePlannerData', JSON.stringify(result))
+      localStorage.setItem('monthlyStrategy', JSON.stringify(refinedStrategy))
+      
+    } catch (error) {
+      console.error('Error refining strategy:', error)
+      alert(`Error al refinar la estrategia: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+    } finally {
+      setRefinementInput('')
+      setIsRefining(false)
     }
-    
-    setStrategy(refinedStrategy)
-    
-    // Guardar estrategia refinada en localStorage
-    localStorage.setItem('monthlyStrategy', JSON.stringify(refinedStrategy))
-    
-    setRefinementInput('')
-    setIsRefining(false)
   }
 
   const acceptStrategy = () => {
@@ -256,13 +317,13 @@ export default function StrategyPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold gradient-text flex items-center gap-2">
-                🎯 Estrategia Mensual
+              <h1 className="text-3xl font-light creatia-title flex items-center gap-2">
+                Estrategia Mensual
               </h1>
               {hasSavedStrategy && (
                 <Badge variant="outline" className="border-brand-success/30 text-brand-success bg-brand-success/5">
-                  <Target className="h-3 w-3 mr-1" />
-                  Estrategia Guardada
+                                  <Target className="h-3 w-3 mr-1 text-green-500" />
+                Estrategia Guardada
                 </Badge>
               )}
             </div>
@@ -280,7 +341,7 @@ export default function StrategyPage() {
                 onClick={handleNewStrategy}
                 className="flex items-center gap-2 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10"
               >
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4 text-cyan-400" />
                 Nueva Estrategia
               </Button>
             )}
@@ -290,7 +351,7 @@ export default function StrategyPage() {
                 onClick={() => setShowDetailedView(!showDetailedView)}
                 className="flex items-center gap-2"
               >
-                <FileText className="h-4 w-4" />
+                <FileText className="h-4 w-4 text-cyan-400" />
                 {showDetailedView ? 'Vista Resumen' : 'Vista Detallada'}
               </Button>
             )}
@@ -302,7 +363,7 @@ export default function StrategyPage() {
           <Card className="shadow-brand">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-brand-primary">
-                <Target className="h-5 w-5" />
+                <Target className="h-5 w-5 text-cyan-400" />
                 Define tu Enfoque del Mes
               </CardTitle>
               <CardDescription>
@@ -324,17 +385,17 @@ export default function StrategyPage() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="gradient-brand text-white"
+                  className="btn-primary"
                   disabled={!focusInput.trim() || isGenerating}
                 >
                   {isGenerating ? (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin text-black" />
                       Generando Estrategia...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-4 w-4 mr-2" />
+                      <Sparkles className="h-4 w-4 mr-2 text-black" />
                       Generar Estrategia
                     </>
                   )}
@@ -350,7 +411,7 @@ export default function StrategyPage() {
             <Card className="shadow-brand">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-brand-primary">
-                  <Calendar className="h-5 w-5" />
+                  <Calendar className="h-5 w-5 text-cyan-400" />
                   Plan Mensual Detallado
                 </CardTitle>
                 <CardDescription>
@@ -376,7 +437,7 @@ export default function StrategyPage() {
                   {corePlannerData.monthly_plan?.mes.semanas.map((semana, semanaIndex) => (
                     <div key={semanaIndex} className="border rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm font-bold">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-cyan-600 text-black flex items-center justify-center text-sm font-bold">
                           {semanaIndex + 1}
                         </div>
                         <div>
@@ -395,7 +456,7 @@ export default function StrategyPage() {
                               </div>
                               <span className="font-medium capitalize text-sm">{post.dia}</span>
                               {post.is_image_required && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className="text-xs border-green-500 text-green-500 bg-green-500/10">
                                   📸 Imagen
                                 </Badge>
                               )}
@@ -441,7 +502,7 @@ export default function StrategyPage() {
             <Card className="shadow-brand">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-brand-primary">
-                  <Brain className="h-5 w-5" />
+                  <Brain className="h-5 w-5 text-cyan-400" />
                   Tema Principal del Mes
                 </CardTitle>
               </CardHeader>
@@ -454,8 +515,8 @@ export default function StrategyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="shadow-brand">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-brand-secondary">
-                    <TrendingUp className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-brand-primary">
+                    <TrendingUp className="h-5 w-5 text-green-500" />
                     Objetivos del Mes
                   </CardTitle>
                 </CardHeader>
@@ -463,7 +524,7 @@ export default function StrategyPage() {
                   <ul className="space-y-2">
                     {strategy.objectives.map((objective, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-brand-success mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                         <span className="text-sm">{objective}</span>
                       </li>
                     ))}
@@ -473,8 +534,8 @@ export default function StrategyPage() {
 
               <Card className="shadow-brand">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-brand-secondary">
-                    <Users className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-brand-primary">
+                    <Users className="h-5 w-5 text-cyan-400" />
                     Pilares de Contenido
                   </CardTitle>
                 </CardHeader>
@@ -494,7 +555,7 @@ export default function StrategyPage() {
             <Card className="shadow-brand">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-brand-primary">
-                  <Calendar className="h-5 w-5" />
+                  <Calendar className="h-5 w-5 text-cyan-400" />
                   Planificación Semanal
                 </CardTitle>
                 <CardDescription>
@@ -508,7 +569,7 @@ export default function StrategyPage() {
                       <CardHeader className="pb-3">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 text-black flex items-center justify-center text-sm font-bold shadow-sm">
                               {week.week}
                             </div>
                           </div>
@@ -523,13 +584,13 @@ export default function StrategyPage() {
                         {/* Objetivos */}
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <Target className="h-4 w-4 text-brand-secondary" />
-                            <span className="font-medium text-brand-secondary text-sm">Objetivos</span>
+                            <Target className="h-4 w-4 text-green-500" />
+                            <span className="font-medium text-brand-primary text-sm">Objetivos</span>
                           </div>
                           <ul className="space-y-1 ml-6">
                             {week.goals.map((goal, goalIndex) => (
                               <li key={goalIndex} className="flex items-start gap-2 text-sm">
-                                <div className="w-1.5 h-1.5 rounded-full bg-brand-primary/60 mt-2 flex-shrink-0"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
                                 <span className="text-muted-foreground leading-relaxed">{goal}</span>
                               </li>
                             ))}
@@ -539,8 +600,8 @@ export default function StrategyPage() {
                         {/* Tipos de contenido */}
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <FileText className="h-4 w-4 text-brand-secondary" />
-                            <span className="font-medium text-brand-secondary text-sm">Tipos de contenido</span>
+                            <FileText className="h-4 w-4 text-cyan-400" />
+                            <span className="font-medium text-brand-primary text-sm">Tipos de contenido</span>
                           </div>
                           <div className="flex flex-wrap gap-2 ml-6">
                             {week.contentTypes.slice(0, 4).map((type, typeIndex) => (
@@ -566,8 +627,8 @@ export default function StrategyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="shadow-brand">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-brand-secondary">
-                    <Hash className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-brand-primary">
+                    <Hash className="h-5 w-5 text-cyan-400" />
                     Hashtags Recomendados
                   </CardTitle>
                 </CardHeader>
@@ -584,8 +645,8 @@ export default function StrategyPage() {
 
               <Card className="shadow-brand">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-brand-secondary">
-                    <FileText className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-brand-primary">
+                    <FileText className="h-5 w-5 text-green-500" />
                     KPIs a Monitorear
                   </CardTitle>
                 </CardHeader>
@@ -593,7 +654,7 @@ export default function StrategyPage() {
                   <ul className="space-y-2">
                     {strategy.kpis.map((kpi, index) => (
                       <li key={index} className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-brand-accent" />
+                        <Clock className="h-4 w-4 text-green-500" />
                         <span className="text-sm">{kpi}</span>
                       </li>
                     ))}
@@ -609,7 +670,7 @@ export default function StrategyPage() {
           <Card className="shadow-brand border-brand-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-brand-primary">
-                <Edit3 className="h-5 w-5" />
+                <Edit3 className="h-5 w-5 text-cyan-400" />
                 Refinar Estrategia
               </CardTitle>
               <CardDescription>
@@ -634,12 +695,12 @@ export default function StrategyPage() {
                 >
                   {isRefining ? (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin text-cyan-400" />
                       Refinando...
                     </>
                   ) : (
                     <>
-                      <Send className="h-4 w-4 mr-2" />
+                      <Send className="h-4 w-4 mr-2 text-cyan-400" />
                       Refinar Estrategia
                     </>
                   )}
@@ -647,9 +708,9 @@ export default function StrategyPage() {
                 
                 <Button 
                   onClick={acceptStrategy}
-                  className="gradient-brand text-white"
+                  className="btn-primary"
                 >
-                  <CheckCircle className="h-4 w-4 mr-2" />
+                  <CheckCircle className="h-4 w-4 mr-2 text-black" />
                   Aceptar Estrategia
                 </Button>
               </div>
