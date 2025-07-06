@@ -479,6 +479,7 @@ export default function PostsSemanalesPage() {
 
       let prompt = initial_prompt + `
       
+      Caracteriza al avatar en relacion al destino donde se realizara el evento.
 {
     "brandIdentity": {
       "name": "AI Weekend (AIWKND)",
@@ -538,7 +539,7 @@ export default function PostsSemanalesPage() {
     "eventStructure": {
       "highlights": ["Conferencias", "Workshops", "Hackaton"],
       "duration": "3 days",
-      "locations": ["Buenos Aires", "Rosario", "Mendoza", "Salta"],
+      "locations": ["Buenos Aires", "Rosario", "Mendoza", "Salta", "Luna"],
       "companies": ["Google", "AWS", "X", "Microsoft", "Vercel"],
       "targetAudience": ["Developers", "Students", "Startups", "Tech Enthusiasts"],
       "sponsorsCall": {
@@ -577,7 +578,7 @@ export default function PostsSemanalesPage() {
           output_format: "jpeg",
           save_directory: "images_generated/frontend",
           filename_prefix: "lunes_post",
-          images_url_list: ["resources_content/avatars/o_1iteckaknngm12do11h953rlftfn.webp", "resources_content/images/gld4By_68274b1c568fa_medium.webp"]
+          images_url_list: ["resources_content/avatars/o_1iteckaknngm12do11h953rlftfn.webp", "resources_content/images/gld4By_68274b1c568fa_medium.webp", "resources_content/images/luna.jpg"]
         }),
       })
 
@@ -726,7 +727,7 @@ export default function PostsSemanalesPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-light creatia-title flex items-center gap-2">
-                📅 Posts Semanales
+                Posts Semanales
               </h1>
               {isUsingCorePlannerData && (
                 <Badge variant="outline" className="border-brand-primary/30 text-brand-primary bg-brand-primary/5">
