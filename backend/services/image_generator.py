@@ -59,21 +59,35 @@ class ImageGeneratorService:
         return result, image_path
 
 
-    async def _generate_single_image_async(
+    async def _generate_image_async(
         self,
         prompt: str,
         quality: str,
         size: str,
         output_format: str,
         images_list: Optional[List[Any]] = None,
-        image_index: int = 0
+        image_index: int = 0,
     ):
         """
         Generate a single image asynchronously.
         This runs the synchronous OpenAI call in a thread pool.
         """
         loop = asyncio.get_event_loop()
-        
+
+        if images_list:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                result = await loop.run_in_executor(
+                    executor,
+                    self.generate_image,
+                    prompt,
+                    quality,                
+                    size,
+                    output_format,
+                    images_list
+                )
+
+            return result
+ 
         # Run the synchronous OpenAI call in a thread pool
         with concurrent.futures.ThreadPoolExecutor() as executor:
             result = await loop.run_in_executor(
@@ -85,39 +99,9 @@ class ImageGeneratorService:
                 output_format,
                 images_list
             )
-        
+
         return result   
    
-
-    async def _edit_single_image_async(
-        self,
-        prompt: str,
-        images_list: List[Any],
-        quality: str,
-        size: str,
-        output_format: str,
-        image_index: int = 0
-    ):
-        """
-        Edit a single image asynchronously.
-        This runs the synchronous OpenAI image edit call in a thread pool.
-        """
-        loop = asyncio.get_event_loop()
-        
-        # Run the synchronous OpenAI call in a thread pool
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            result = await loop.run_in_executor(
-                executor,
-                self.generate_image,
-                prompt,
-                quality,                
-                size,
-                output_format,
-                images_list
-            )
-        
-        return result
-
 
     async def generate_multiple_images_parallel(
         self,
@@ -153,7 +137,6 @@ class ImageGeneratorService:
             raise ValueError("Count cannot exceed 10 images per batch")
 
         if images_url_list:
-            # Create tasks for parallel execution
             images_list = []
             for url in images_url_list:
                 img = open(url, "rb")
@@ -161,20 +144,19 @@ class ImageGeneratorService:
 
             tasks = []
             for i in range(count):
-                task = self._edit_single_image_async(
+                task = self._generate_image_async(
                     prompt=prompt,
-                    images_list=images_list,
                     quality=quality,
                     size=size,
                     output_format=output_format,
+                    images_list=images_list,
                     image_index=i,
                 )
                 tasks.append(task)       
         else:      
-            # Create tasks for parallel execution
             tasks = []
             for i in range(count):
-                task = self._generate_single_image_async(
+                task = self._generate_image_async(
                     prompt=prompt,
                     quality=quality,
                     size=size,
